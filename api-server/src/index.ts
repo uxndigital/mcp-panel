@@ -38,10 +38,10 @@ app.use("/:mcpName/mcp", (req, res, next) => {
       const serverInstance = new Server(mcpServer);
       
       if (req.method === "POST") {
-        serverInstance.handlePostRequest(req, res).catch(next);
+        serverInstance.handlePostRequest(req as any, res as any).catch(next);
         return;
       } else if (req.method === "GET") {
-        serverInstance.handleGetRequest(req, res).catch(next);
+        serverInstance.handleGetRequest(req as any, res as any).catch(next);
         return;
       }
       return;
