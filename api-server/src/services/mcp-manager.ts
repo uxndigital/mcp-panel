@@ -310,6 +310,105 @@ export class McpManager {
     }
   }
 
+  async updateMcp(endpoint: string): Promise<McpMetadata> {
+    console.log(`🔄 开始更新 MCP: ${endpoint}`);
+    const mcpDir = this.mcpEndpoints.get(endpoint);
+    const currentMetadata = this.mcpMetadata.get(endpoint);
+    
+    if (!mcpDir || !currentMetadata) {
+      throw new Error(`未找到端点 ${endpoint} 对应的 MCP`);
+    }
+
+    console.log(`📍 目标目录: ${mcpDir}`);
+
+    let oldCommit: string = '';
+
+    try {
+      // 检查目录是否存在 Git 仓库
+      try {
+        await fs.access(path.join(mcpDir, '.git'));
+      } catch {
+        throw new Error(`MCP 目录不是 Git 仓库，无法更新: ${mcpDir}`);
+      }
+
+      // 获取当前提交哈希以备回滚
+      const { stdout: currentCommit } = await execAsync(`cd ${mcpDir} && git rev-parse HEAD`);
+      oldCommit = currentCommit.trim();
+      
+      console.log(`📊 当前提交: ${oldCommit.substring(0, 8)}`);
+
+      // 拉取最新代码
+      await execAsync(`cd ${mcpDir} && git fetch origin`);
+      
+      // 检查是否有更新
+      const { stdout: latestCommit } = await execAsync(`cd ${mcpDir} && git rev-parse origin/main || git rev-parse origin/master`);
+      const newCommit = latestCommit.trim();
+      
+      if (oldCommit === newCommit) {
+        console.log(`ℹ️ MCP 已是最新版本，无需更新`);
+        return currentMetadata;
+      }
+
+      console.log(`🆕 发现更新: ${newCommit.substring(0, 8)}`);
+
+      // 更新到最新版本
+      await execAsync(`cd ${mcpDir} && git reset --hard origin/main || git reset --hard origin/master`);
+      
+      // 重新安装依赖并构建
+      await execAsync(`cd ${mcpDir} && pnpm install --ignore-workspace && pnpm run build`);
+      console.log(`📦 已重新构建 MCP`);
+
+      // 清理源代码文件（保留构建后的文件）
+      await execAsync(`rm -rf ${mcpDir}/src ${mcpDir}/server ${mcpDir}/.github`);
+
+      // 重新加载模块 - 需要清除模块缓存
+      const modulePath = path.join(mcpDir, 'dist/src/index.js');
+      
+      // 删除模块缓存（Node.js 特定）
+      if (require.cache[modulePath]) {
+        delete require.cache[modulePath];
+      }
+
+      // 重新动态导入 MCP 服务器
+      const mcpModule = await import(`${modulePath}?t=${Date.now()}`); // 添加时间戳避免缓存
+      const server = mcpModule.default;
+
+      // 获取更新后的 Git 信息
+      const gitInfo = await this.getGitInfo(mcpDir);
+      
+      // 更新元数据
+      const updatedMetadata: McpMetadata = {
+        name: currentMetadata.name,
+        gitUrl: currentMetadata.gitUrl,
+        version: gitInfo.version,
+        commit: gitInfo.commit,
+        installDate: new Date().toISOString(),
+        directory: mcpDir
+      };
+      
+      // 更新内存中的服务器和元数据
+      this.mcpServers.set(endpoint, server);
+      this.mcpMetadata.set(endpoint, updatedMetadata);
+
+      console.log(`✅ 成功更新 MCP: ${endpoint} (${oldCommit.substring(0, 8)} → ${newCommit.substring(0, 8)})`);
+      return updatedMetadata;
+    } catch (error) {
+      console.error(`❌ 更新 MCP 失败: ${endpoint}`, error);
+      
+      // 尝试回滚到之前的版本
+      if (oldCommit) {
+        try {
+          await execAsync(`cd ${mcpDir} && git reset --hard ${oldCommit}`);
+          console.log(`🔄 已回滚到之前版本`);
+        } catch (rollbackError) {
+          console.error(`❌ 回滚失败:`, rollbackError);
+        }
+      }
+      
+      throw new Error(`更新失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  }
+
   getMcpServer(endpoint: string): McpServer | undefined {
     return this.mcpServers.get(endpoint);
   }

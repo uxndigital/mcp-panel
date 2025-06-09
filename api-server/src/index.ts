@@ -81,6 +81,20 @@ app.delete("/api/mcp/uninstall/:mcpName", (req, res, next) => {
     .catch(next);
 });
 
+// 更新 MCP - 使用具体的PUT路由
+app.put("/api/mcp/update/:mcpName", (req, res, next) => {
+  const mcpName = req.params.mcpName;
+  console.log(mcpName, 'mcpName');
+  
+  const endpoint = `/${mcpName}/mcp`;
+  console.log(`🔄 更新 MCP: ${endpoint}`);
+
+  mcpManager
+    .updateMcp(endpoint)
+    .then((updatedMetadata) => res.json({ success: true, metadata: updatedMetadata }))
+    .catch(next);
+});
+
 // 获取所有 MCP 端点列表
 app.get("/api/mcp/list", (req, res) => {
   const mcpInfo = mcpManager.getAllMcpInfo();

@@ -18,6 +18,7 @@ function App() {
   const [mcps, setMcps] = useState<McpInfo[]>([])
   const [githubUrl, setGithubUrl] = useState('')
   const [loading, setLoading] = useState(false)
+  const [updatingMcps, setUpdatingMcps] = useState<Set<string>>(new Set())
 
   // 获取 MCP 列表
   const fetchMcps = async () => {
@@ -50,16 +51,55 @@ function App() {
       } else {
         const error = await response.json()
         console.error('安装失败:', error.error)
+        alert(`安装失败: ${error.error}`)
       }
     } catch (error) {
       console.error('安装失败:', error)
+      alert(`安装失败: ${error}`)
     } finally {
       setLoading(false)
     }
   }
 
+  // 更新 MCP
+  const updateMcp = async (mcpInfo: McpInfo) => {
+    const mcpName = mcpInfo.name;
+    setUpdatingMcps(prev => new Set(prev.add(mcpName)));
+    
+    try {
+      const encodedMcpName = encodeURIComponent(mcpName);
+      const response = await fetch(`/api/mcp/update/${encodedMcpName}`, {
+        method: 'PUT'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('更新成功:', data.metadata)
+        alert(`更新成功! 新版本: ${data.metadata.commit.substring(0, 8)}`)
+        await fetchMcps()
+      } else {
+        const error = await response.json()
+        console.error('更新失败:', error.error)
+        alert(`更新失败: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('更新失败:', error)
+      alert(`更新失败: ${error}`)
+    } finally {
+      setUpdatingMcps(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(mcpName);
+        return newSet;
+      });
+    }
+  }
+
   // 卸载 MCP
   const uninstallMcp = async (mcpInfo: McpInfo) => {
+    if (!confirm(`确定要卸载 ${mcpInfo.name} 吗？`)) {
+      return;
+    }
+    
     try {
       const encodedMcpName = encodeURIComponent(mcpInfo.name);
       const response = await fetch(`/api/mcp/uninstall/${encodedMcpName}`, {
@@ -72,9 +112,11 @@ function App() {
       } else {
         const error = await response.json()
         console.error('卸载失败:', error.error)
+        alert(`卸载失败: ${error.error}`)
       }
     } catch (error) {
       console.error('卸载失败:', error)
+      alert(`卸载失败: ${error}`)
     }
   }
 
@@ -155,20 +197,37 @@ function App() {
                       <div><strong>端点:</strong> <code>/{mcp.name}/mcp</code></div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => uninstallMcp(mcp)}
-                    style={{ 
-                      backgroundColor: '#ff4444', 
-                      color: 'white', 
-                      border: 'none',
-                      padding: '8px 15px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '0.9em'
-                    }}
-                  >
-                    卸载
-                  </button>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                      onClick={() => updateMcp(mcp)}
+                      disabled={updatingMcps.has(mcp.name)}
+                      style={{ 
+                        backgroundColor: updatingMcps.has(mcp.name) ? '#ccc' : '#28a745', 
+                        color: 'white', 
+                        border: 'none',
+                        padding: '8px 15px',
+                        borderRadius: '4px',
+                        cursor: updatingMcps.has(mcp.name) ? 'not-allowed' : 'pointer',
+                        fontSize: '0.9em'
+                      }}
+                    >
+                      {updatingMcps.has(mcp.name) ? '更新中...' : '更新'}
+                    </button>
+                    <button 
+                      onClick={() => uninstallMcp(mcp)}
+                      style={{ 
+                        backgroundColor: '#ff4444', 
+                        color: 'white', 
+                        border: 'none',
+                        padding: '8px 15px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.9em'
+                      }}
+                    >
+                      卸载
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
