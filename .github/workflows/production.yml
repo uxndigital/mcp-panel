@@ -67,75 +67,16 @@ jobs:
           echo "path=$STORE_PATH" >> $GITHUB_OUTPUT
           echo "📁 pnpm store 路径: $STORE_PATH"
 
-      - name: Git 仓库设置和代码同步
+      - name: Cache pnpm modules
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-store-path.outputs.path }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
         run: |
-          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
-          REPO_NAME=${GITHUB_REPOSITORY##*/}
-          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
-          
-          echo "===== Git 仓库设置 ====="
-          
-          # 确保部署目录存在
-          mkdir -p $DEPLOY_PATH
-          echo "✅ 部署目录已创建: $DEPLOY_PATH"
-
-          # 检查是否为 Git 仓库
-          if [ ! -d "$DEPLOY_PATH/.git" ]; then
-            echo "🔄 初始化 Git 仓库"
-            cd $DEPLOY_PATH
-            git init
-            git remote add origin git@github.com:$GITHUB_REPOSITORY.git
-            echo "✅ Git 仓库初始化完成"
-          else
-            echo "✅ Git 仓库已存在"
-          fi
-
-          cd $DEPLOY_PATH
-          # 设置安全目录
-          git config --global --add safe.directory $DEPLOY_PATH
-          
-          echo "🔄 同步代码..."
-          # 使用 fetch 和 reset 代替 pull 以避免冲突
-          git fetch origin ${GITHUB_REF#refs/heads/}
-          git reset --hard origin/${GITHUB_REF#refs/heads/}
-          echo "✅ 代码同步完成"
-          
-          echo "📋 当前目录内容:"
-          ls -lash
-
-      - name: 安装依赖
-        run: |
-          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
-          REPO_NAME=${GITHUB_REPOSITORY##*/}
-          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
-          cd $DEPLOY_PATH
-          
-          echo "===== 安装依赖 ====="
-          
-          # 处理部署特定的锁文件
-          if [ -f "./pnpm-lock.deploy.yaml" ]; then
-            echo "🔄 使用部署专用锁文件"
-            mv ./pnpm-lock.deploy.yaml ./pnpm-lock.yaml
-          fi
-          
-          # 安装依赖
-          echo "📦 安装依赖中..."
           pnpm install --frozen-lockfile
-          echo "✅ 依赖安装完成"
-          
-          # 验证关键依赖
-          echo "🔍 验证关键依赖:"
-          if [ -d "node_modules/@modelcontextprotocol" ]; then
-            echo "✅ MCP SDK 依赖已安装"
-          else
-            echo "❌ MCP SDK 依赖缺失"
-          fi
-          
-          if [ -d "node_modules/express" ]; then
-            echo "✅ Express 依赖已安装"
-          else
-            echo "❌ Express 依赖缺失"
-          fi
 
       - name: 构建项目
         run: |
