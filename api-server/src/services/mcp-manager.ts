@@ -6,9 +6,19 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const execAsync = promisify(exec);
 
+interface McpMetadata {
+  name: string;
+  gitUrl: string;
+  version?: string;
+  commit: string;
+  installDate: string;
+  directory: string;
+}
+
 export class McpManager {
   private mcpServers: Map<string, McpServer> = new Map();
   private mcpEndpoints: Map<string, string> = new Map();
+  private mcpMetadata: Map<string, McpMetadata> = new Map();
   private baseDir: string;
 
   constructor() {
@@ -55,6 +65,32 @@ export class McpManager {
           this.mcpServers.set(endpoint, server);
           this.mcpEndpoints.set(endpoint, mcpDir);
           
+          // 尝试获取已存在 MCP 的 Git 信息
+          try {
+            const gitInfo = await this.getGitInfo(mcpDir);
+            const metadata: McpMetadata = {
+              name: dir.name,
+              gitUrl: await this.getRemoteUrl(mcpDir),
+              version: gitInfo.version,
+              commit: gitInfo.commit,
+              installDate: 'unknown', // 已存在的 MCP 无法确定安装时间
+              directory: mcpDir
+            };
+            this.mcpMetadata.set(endpoint, metadata);
+          } catch (error) {
+            console.warn(`无法获取 ${dir.name} 的 Git 信息:`, error);
+            // 创建基本元数据
+            const metadata: McpMetadata = {
+              name: dir.name,
+              gitUrl: 'unknown',
+              version: undefined,
+              commit: 'unknown',
+              installDate: 'unknown',
+              directory: mcpDir
+            };
+            this.mcpMetadata.set(endpoint, metadata);
+          }
+          
           console.log(`✅ 已加载 MCP: ${dir.name}`);
         } catch (error) {
           console.warn(`⚠️ 发现无效的 MCP 目录: ${dir.name}，正在清理...`);
@@ -87,8 +123,14 @@ export class McpManager {
       const repoName = githubUrl.split('/').pop()?.replace('.git', '') || '';
       const mcpDir = path.join(this.baseDir, repoName);
 
+      console.log(`🔄 开始安装 MCP: ${repoName}`);
+      
       // 克隆仓库
       await execAsync(`git clone ${githubUrl} ${mcpDir}`);
+
+      // 获取 Git 信息
+      const gitInfo = await this.getGitInfo(mcpDir);
+      console.log(`📊 Git 信息: ${gitInfo.commit.substring(0, 8)} ${gitInfo.version || 'no version'}`);
 
       // 使用 --ignore-workspace 标志独立安装依赖
       await execAsync(`cd ${mcpDir} && pnpm install --ignore-workspace && pnpm run build`);
@@ -104,10 +146,22 @@ export class McpManager {
       // 生成唯一的端点路径
       const endpoint = `/${repoName}/mcp`;
       
-      // 注册 MCP 服务器
+      // 保存元数据
+      const metadata: McpMetadata = {
+        name: repoName,
+        gitUrl: githubUrl,
+        version: gitInfo.version,
+        commit: gitInfo.commit,
+        installDate: new Date().toISOString(),
+        directory: mcpDir
+      };
+      
+      // 注册 MCP 服务器和元数据
       this.mcpServers.set(endpoint, server);
       this.mcpEndpoints.set(endpoint, mcpDir);
+      this.mcpMetadata.set(endpoint, metadata);
 
+      console.log(`✅ 成功安装 MCP: ${endpoint}`);
       return endpoint;
     } catch (error) {
       console.error('Error installing MCP:', error);
@@ -115,9 +169,70 @@ export class McpManager {
     }
   }
 
+  private async getGitInfo(mcpDir: string): Promise<{ commit: string; version?: string }> {
+    try {
+      // 获取最新提交的哈希
+      const { stdout: commit } = await execAsync(`cd ${mcpDir} && git rev-parse HEAD`);
+      
+      // 尝试获取版本标签
+      let version: string | undefined;
+      try {
+        const { stdout: tagOutput } = await execAsync(`cd ${mcpDir} && git describe --tags --exact-match HEAD 2>/dev/null || echo ""`);
+        if (tagOutput.trim()) {
+          version = tagOutput.trim();
+        }
+      } catch {
+        // 如果没有标签，尝试获取最近的标签
+        try {
+          const { stdout: nearestTag } = await execAsync(`cd ${mcpDir} && git describe --tags --abbrev=0 2>/dev/null || echo ""`);
+          if (nearestTag.trim()) {
+            version = `${nearestTag.trim()}+`;
+          }
+        } catch {
+          // 忽略错误，版本保持为 undefined
+        }
+      }
+
+      // 如果还没有版本，尝试从 package.json 获取
+      if (!version) {
+        try {
+          const packageJsonPath = path.join(mcpDir, 'package.json');
+          const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
+          if (packageJson.version) {
+            version = packageJson.version;
+          }
+        } catch {
+          // 忽略错误
+        }
+      }
+
+      return {
+        commit: commit.trim(),
+        version
+      };
+    } catch (error) {
+      console.warn('获取 Git 信息失败:', error);
+      return {
+        commit: 'unknown',
+        version: undefined
+      };
+    }
+  }
+
+  private async getRemoteUrl(mcpDir: string): Promise<string> {
+    try {
+      const { stdout } = await execAsync(`cd ${mcpDir} && git remote get-url origin`);
+      return stdout.trim();
+    } catch (error) {
+      console.warn('获取远程 URL 失败:', error);
+      return 'unknown';
+    }
+  }
+
   async uninstallMcp(endpoint: string): Promise<void> {
     console.log(`🔧 开始卸载 MCP: ${endpoint}`);
     const mcpDir = this.mcpEndpoints.get(endpoint);
+    const mcpMetadata = this.mcpMetadata.get(endpoint);
     
     if (!mcpDir) {
       throw new Error(`未找到端点 ${endpoint} 对应的 MCP 目录`);
@@ -129,6 +244,7 @@ export class McpManager {
       // 先从内存中移除引用
       this.mcpServers.delete(endpoint);
       this.mcpEndpoints.delete(endpoint);
+      this.mcpMetadata.delete(endpoint);
       console.log(`🧠 已从内存中移除 MCP 引用`);
       
       // 检查目录是否存在
@@ -185,8 +301,11 @@ export class McpManager {
       // 删除失败，恢复内存映射
       if (mcpDir) {
         this.mcpEndpoints.set(endpoint, mcpDir);
-        console.log(`🔄 已恢复内存映射`);
       }
+      if (mcpMetadata) {
+        this.mcpMetadata.set(endpoint, mcpMetadata);
+      }
+      console.log(`🔄 已恢复内存映射`);
       throw error;
     }
   }
@@ -197,5 +316,9 @@ export class McpManager {
 
   getAllEndpoints(): string[] {
     return Array.from(this.mcpEndpoints.keys());
+  }
+
+  getAllMcpInfo(): McpMetadata[] {
+    return Array.from(this.mcpMetadata.values());
   }
 } 

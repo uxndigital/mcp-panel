@@ -83,11 +83,11 @@ app.delete("/api/mcp/uninstall/:mcpName", (req, res, next) => {
 
 // 获取所有 MCP 端点列表
 app.get("/api/mcp/list", (req, res) => {
-  const endpoints = mcpManager.getAllEndpoints();
+  const mcpInfo = mcpManager.getAllMcpInfo();
   
-  console.log(`📋 获取 MCP 列表: ${endpoints.length} 个端点`);
+  console.log(`📋 获取 MCP 列表: ${mcpInfo.length} 个 MCP`);
   
-  res.json({ endpoints });
+  res.json({ mcps: mcpInfo });
 });
 
 // 健康检查端点

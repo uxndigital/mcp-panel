@@ -1,21 +1,30 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-interface McpEndpoint {
-  endpoints: string[]
+interface McpInfo {
+  name: string;
+  gitUrl: string;
+  version?: string;
+  commit: string;
+  installDate: string;
+  directory: string;
+}
+
+interface McpListResponse {
+  mcps: McpInfo[]
 }
 
 function App() {
-  const [endpoints, setEndpoints] = useState<string[]>([])
+  const [mcps, setMcps] = useState<McpInfo[]>([])
   const [githubUrl, setGithubUrl] = useState('')
   const [loading, setLoading] = useState(false)
 
   // 获取 MCP 列表
-  const fetchEndpoints = async () => {
+  const fetchMcps = async () => {
     try {
       const response = await fetch('/api/mcp/list')
-      const data: McpEndpoint = await response.json()
-      setEndpoints(data.endpoints)
+      const data: McpListResponse = await response.json()
+      setMcps(data.mcps)
     } catch (error) {
       console.error('获取 MCP 列表失败:', error)
     }
@@ -37,7 +46,7 @@ function App() {
         const data = await response.json()
         console.log('安装成功:', data.endpoint)
         setGithubUrl('')
-        await fetchEndpoints()
+        await fetchMcps()
       } else {
         const error = await response.json()
         console.error('安装失败:', error.error)
@@ -50,18 +59,16 @@ function App() {
   }
 
   // 卸载 MCP
-  const uninstallMcp = async (endpoint: string) => {
+  const uninstallMcp = async (mcpInfo: McpInfo) => {
     try {
-      // 新格式: /puppeteer-mcp/mcp -> 提取 puppeteer-mcp
-      const mcpName = endpoint.replace(/^\//, '').replace(/\/mcp$/, '');
-      const encodedMcpName = encodeURIComponent(mcpName);
+      const encodedMcpName = encodeURIComponent(mcpInfo.name);
       const response = await fetch(`/api/mcp/uninstall/${encodedMcpName}`, {
         method: 'DELETE'
       })
       
       if (response.ok) {
         console.log('卸载成功')
-        await fetchEndpoints()
+        await fetchMcps()
       } else {
         const error = await response.json()
         console.error('卸载失败:', error.error)
@@ -71,8 +78,16 @@ function App() {
     }
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('zh-CN')
+  }
+
+  const formatCommit = (commit: string) => {
+    return commit.substring(0, 8)
+  }
+
   useEffect(() => {
-    fetchEndpoints()
+    fetchMcps()
   }, [])
 
   return (
@@ -97,25 +112,67 @@ function App() {
 
       <div className="mcp-list">
         <h2>已安装的 MCP 服务器</h2>
-        <button onClick={fetchEndpoints} style={{ marginBottom: '10px' }}>
+        <button onClick={fetchMcps} style={{ marginBottom: '10px' }}>
           刷新列表
         </button>
-        {endpoints.length === 0 ? (
+        {mcps.length === 0 ? (
           <p>暂无已安装的 MCP 服务器</p>
         ) : (
-          <ul>
-            {endpoints.map((endpoint) => (
-              <li key={endpoint} style={{ marginBottom: '10px' }}>
-                <span>{endpoint}</span>
-                <button 
-                  onClick={() => uninstallMcp(endpoint)}
-                  style={{ marginLeft: '10px', backgroundColor: '#ff4444', color: 'white' }}
-                >
-                  卸载
-                </button>
-              </li>
+          <div>
+            {mcps.map((mcp) => (
+              <div key={mcp.name} style={{ 
+                border: '1px solid #ddd', 
+                borderRadius: '8px', 
+                padding: '15px', 
+                marginBottom: '15px',
+                backgroundColor: '#f9f9f9'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>
+                      {mcp.name}
+                      {mcp.version && (
+                        <span style={{ 
+                          marginLeft: '10px', 
+                          fontSize: '0.8em', 
+                          backgroundColor: '#007acc', 
+                          color: 'white', 
+                          padding: '2px 8px', 
+                          borderRadius: '4px' 
+                        }}>
+                          {mcp.version}
+                        </span>
+                      )}
+                    </h3>
+                    <div style={{ fontSize: '0.9em', color: '#666', lineHeight: '1.4' }}>
+                      <div><strong>Git URL:</strong> 
+                        <a href={mcp.gitUrl} target="_blank" rel="noopener noreferrer" style={{ marginLeft: '5px', color: '#007acc' }}>
+                          {mcp.gitUrl}
+                        </a>
+                      </div>
+                      <div><strong>提交:</strong> <code style={{ backgroundColor: '#eee', padding: '2px 4px', borderRadius: '3px' }}>{formatCommit(mcp.commit)}</code></div>
+                      <div><strong>安装时间:</strong> {formatDate(mcp.installDate)}</div>
+                      <div><strong>端点:</strong> <code>/{mcp.name}/mcp</code></div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => uninstallMcp(mcp)}
+                    style={{ 
+                      backgroundColor: '#ff4444', 
+                      color: 'white', 
+                      border: 'none',
+                      padding: '8px 15px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.9em'
+                    }}
+                  >
+                    卸载
+                  </button>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
