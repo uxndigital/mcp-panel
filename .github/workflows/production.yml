@@ -80,7 +80,7 @@ jobs:
 
       - name: 构建项目
         run: |
-          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          # source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
           REPO_NAME=${GITHUB_REPOSITORY##*/}
           DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
           cd $DEPLOY_PATH
