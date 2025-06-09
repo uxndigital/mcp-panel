@@ -1,149 +1,421 @@
-name: Build VS Prod Server (centos2-vs-com)
+name: Deploy MCP Panel to Production
 
 on:
   push:
     branches: ['main']
-    paths-ignore: # Add paths to ignore
+    paths-ignore:
       - '**.md'
       - 'docs/**'
       - '.gitignore'
+      - 'LICENSE'
   workflow_dispatch:
 
 jobs:
   # 构建作业
   build:
-    runs-on: centos2-vs-com
-    # Add concurrency to cancel redundant runs
+    runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
+    outputs:
+      REPO_NAME: ${{ steps.output_REPO_NAME.outputs.REPO_NAME }}
+      BUILD_SUCCESS: ${{ steps.build_check.outputs.BUILD_SUCCESS }}
     env:
       PATH: /bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v22.14.0/bin:/home/${{ secrets.SERVER_USERNAME }}/.local/share/pnpm:$PATH
       DEPLOY_ENV: production
       DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT }}
+    
     steps:
-      - name: Check user and permissions
+      - name: 检查用户和环境
         run: |
+          echo "===== 环境检查 ====="
           echo "当前用户: $(whoami)"
           echo "用户ID: $(id)"
           echo "当前目录: $(pwd)"
           echo "主目录: $HOME"
+          echo "Node.js 版本: $(node --version)"
+          echo "pnpm 版本: $(pnpm --version)"
+          echo "Git 版本: $(git --version)"
+          
+          # 设置仓库信息
           REPO_NAME=${GITHUB_REPOSITORY##*/}
           DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
-          # 检查git配置
-          git config --list
-          # 检查 ${DEPLOY_PATH} 是否为git仓库
-          if [ -d "${DEPLOY_PATH}/.git" ]; then
-            echo "${DEPLOY_PATH} 是一个git仓库"
-          else
-            echo "${DEPLOY_PATH} 不是一个git仓库"
-          fi
+          echo "仓库名称: $REPO_NAME"
+          echo "部署路径: $DEPLOY_PATH"
 
-      - name: Get pnpm store path
+      - name: 设置仓库名称环境变量
+        id: output_REPO_NAME
+        run: |
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "📦 仓库名称: $REPO_NAME"
+
+      - name: 获取 pnpm store 路径
         id: pnpm-store-path
-        run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
+        run: |
+          STORE_PATH=$(pnpm store path)
+          echo "path=$STORE_PATH" >> $GITHUB_OUTPUT
+          echo "📁 pnpm store 路径: $STORE_PATH"
 
-      - name: Install and Build dependencies
+      - name: Git 仓库设置和代码同步
         run: |
           source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
           REPO_NAME=${GITHUB_REPOSITORY##*/}
           DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
-          echo $DEPLOY_PATH
-          echo $REPO_NAME
-
+          
+          echo "===== Git 仓库设置 ====="
+          
           # 确保部署目录存在
           mkdir -p $DEPLOY_PATH
+          echo "✅ 部署目录已创建: $DEPLOY_PATH"
 
-          # 如果不是git仓库,则初始化
+          # 检查是否为 Git 仓库
           if [ ! -d "$DEPLOY_PATH/.git" ]; then
+            echo "🔄 初始化 Git 仓库"
             cd $DEPLOY_PATH
             git init
             git remote add origin git@github.com:$GITHUB_REPOSITORY.git
+            echo "✅ Git 仓库初始化完成"
+          else
+            echo "✅ Git 仓库已存在"
           fi
 
           cd $DEPLOY_PATH
           # 设置安全目录
           git config --global --add safe.directory $DEPLOY_PATH
-          # 使用fetch和reset代替pull以避免锁文件问题
+          
+          echo "🔄 同步代码..."
+          # 使用 fetch 和 reset 代替 pull 以避免冲突
           git fetch origin ${GITHUB_REF#refs/heads/}
           git reset --hard origin/${GITHUB_REF#refs/heads/}
-
-          if [ -f "./pnpm-lock.deploy.yaml" ]; then
-            mv ./pnpm-lock.deploy.yaml ./pnpm-lock.yaml
-          fi
-          pnpm install --frozen-lockfile
-          # pnpm build
-          pwd
+          echo "✅ 代码同步完成"
+          
+          echo "📋 当前目录内容:"
           ls -lash
 
+      - name: 安装依赖
+        run: |
+          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
+          cd $DEPLOY_PATH
+          
+          echo "===== 安装依赖 ====="
+          
+          # 处理部署特定的锁文件
+          if [ -f "./pnpm-lock.deploy.yaml" ]; then
+            echo "🔄 使用部署专用锁文件"
+            mv ./pnpm-lock.deploy.yaml ./pnpm-lock.yaml
+          fi
+          
+          # 安装依赖
+          echo "📦 安装依赖中..."
+          pnpm install --frozen-lockfile
+          echo "✅ 依赖安装完成"
+          
+          # 验证关键依赖
+          echo "🔍 验证关键依赖:"
+          if [ -d "node_modules/@modelcontextprotocol" ]; then
+            echo "✅ MCP SDK 依赖已安装"
+          else
+            echo "❌ MCP SDK 依赖缺失"
+          fi
+          
+          if [ -d "node_modules/express" ]; then
+            echo "✅ Express 依赖已安装"
+          else
+            echo "❌ Express 依赖缺失"
+          fi
+
+      - name: 构建项目
+        run: |
+          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
+          cd $DEPLOY_PATH
+          
+          echo "===== 构建项目 ====="
+          export DEPLOY_ENV=production
+          
+          # 清理旧的构建产物
+          echo "🧹 清理旧构建产物"
+          rm -rf api-server/dist web-app/dist packages/mcp-server/dist
+          
+          # 构建项目
+          echo "🏗️ 开始构建..."
+          pnpm run build
+          echo "✅ 项目构建完成"
+
+      - name: 验证构建结果
+        id: build_check
+        run: |
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
+          cd $DEPLOY_PATH
+          
+          echo "===== 验证构建结果 ====="
+          BUILD_FAILED=0
+          
+          # 检查 API Server 构建
+          if [ -d "api-server/dist" ] && [ -f "api-server/dist/api-server/src/index.js" ]; then
+            echo "✅ API Server 构建成功"
+            ls -la api-server/dist/
+          else
+            echo "❌ API Server 构建失败"
+            BUILD_FAILED=1
+          fi
+          
+          # 检查 Web App 构建
+          if [ -d "web-app/dist" ] && [ -f "web-app/dist/index.html" ]; then
+            echo "✅ Web App 构建成功"
+            ls -la web-app/dist/
+          else
+            echo "❌ Web App 构建失败"
+            BUILD_FAILED=1
+          fi
+          
+          # 检查 MCP Server 构建
+          if [ -d "packages/mcp-server/dist" ]; then
+            echo "✅ MCP Server 构建成功"
+            ls -la packages/mcp-server/dist/
+          else
+            echo "❌ MCP Server 构建失败"
+            BUILD_FAILED=1
+          fi
+          
+          # 检查 PM2 配置文件
+          if [ -f "ecosystem.config.cjs" ]; then
+            echo "✅ PM2 配置文件存在"
+          else
+            echo "❌ PM2 配置文件缺失"
+            BUILD_FAILED=1
+          fi
+          
+          if [ $BUILD_FAILED -eq 0 ]; then
+            echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
+            echo "🎉 所有构建验证通过"
+          else
+            echo "BUILD_SUCCESS=false" >> $GITHUB_OUTPUT
+            echo "💥 构建验证失败"
+            exit 1
+          fi
+
+  # 部署作业
   deploy:
-    # 依赖于构建作业
     needs: build
     runs-on: centos2-vs-com
+    if: needs.build.outputs.BUILD_SUCCESS == 'true'
     env:
       DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT }}
       BASE_PATH: ${{ vars.BASE_PATH }}
+      PATH: /bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v22.14.0/bin:/home/${{ secrets.SERVER_USERNAME }}/.local/share/pnpm:$PATH
+    
     steps:
-      - name: pm2
+      - name: PM2 部署应用
         env:
           DEPLOY_ENV: production
-          PATH: /bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v22.14.0/bin:/home/${{ secrets.SERVER_USERNAME }}/.local/share/pnpm:$PATH
         run: |
           source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
-          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          REPO_NAME=${{ needs.build.outputs.REPO_NAME }}
           DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
           cd $DEPLOY_PATH
+          
+          echo "===== PM2 部署应用 ====="
           echo "仓库名称: $REPO_NAME"
+          echo "部署路径: $DEPLOY_PATH"
 
           if [ -f "ecosystem.config.cjs" ]; then
-            echo "ecosystem.config.cjs配置文件"
-            # Ensure PM2 can find the script
-            # npm run sse --dry-run || echo "Script check failed but continuing"
-            pm2 delete $REPO_NAME || true
+            echo "✅ 使用 ecosystem.config.cjs 配置文件"
+            
+            # 显示当前 PM2 状态
+            echo "🔍 当前 PM2 状态:"
+            pm2 status || echo "PM2 可能还没有运行的应用"
+            
+            # 停止并删除现有应用
+            echo "🛑 停止现有应用"
+            pm2 stop ecosystem.config.cjs || true
+            pm2 delete ecosystem.config.cjs || true
+            
+            # 启动新应用
+            echo "🚀 启动新应用"
             pm2 start ecosystem.config.cjs --env ${DEPLOY_ENV} --update-env
+            
+            # 显示应用配置
+            echo "📋 PM2 应用配置:"
+            node -e "console.log(JSON.stringify(require('./ecosystem.config.cjs'), null, 2))"
+            
           else
-            echo "ecosystem.config.cjs, 使用默认配置启动"
-            pm2 start npm --name ${REPO_NAME} -- run start
+            echo "❌ 未找到 ecosystem.config.cjs 配置文件"
+            echo "🔄 使用默认配置启动"
+            
+            # 停止现有应用
+            pm2 stop ${REPO_NAME} || true
+            pm2 delete ${REPO_NAME} || true
+            
+            # 使用默认配置启动
+            pm2 start "pnpm start" --name ${REPO_NAME}
           fi
-          pm2 reset ${REPO_NAME} || true
+          
+          # 重置应用统计
+          pm2 reset all || true
+          echo "✅ PM2 部署完成"
 
-      - name: 监控应用日志
+      - name: 等待应用启动
         run: |
           source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
-          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          REPO_NAME=${{ needs.build.outputs.REPO_NAME }}
+          
+          echo "===== 等待应用启动 ====="
+          echo "⏳ 等待应用完全启动 (10秒)"
+          sleep 10
+          
+          # 显示当前状态
+          echo "📊 当前 PM2 状态:"
+          pm2 status
+
+      - name: 监控应用启动日志
+        run: |
+          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          REPO_NAME=${{ needs.build.outputs.REPO_NAME }}
           DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
 
-          echo "===== 应用日志 (10秒) ====="
+          echo "===== 监控应用启动日志 (15秒) ====="
           cd $DEPLOY_PATH
-          # 清除旧日志以便查看最新日志
-          pm2 flush $REPO_NAME
-          # 等待应用启动并生成日志
+          
+          # 清除旧日志
+          pm2 flush all || true
+          echo "🧹 已清除旧日志"
+          
+          # 等待日志生成
           sleep 3
-          # 获取最新日志
-          pm2 logs $REPO_NAME --lines 100 --raw &
+          
+          # 获取应用日志
+          echo "📝 获取应用日志:"
+          pm2 logs --lines 50 --raw &
           LOG_PID=$!
-          # 等待10秒
-          sleep 10
+          
+          # 监控 15 秒
+          sleep 15
+          
           # 终止日志进程
           kill $LOG_PID 2>/dev/null || true
+          echo "✅ 日志监控完成"
 
-      - name: 检查应用状态
+      - name: 应用健康检查
         run: |
           source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
-          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          REPO_NAME=${{ needs.build.outputs.REPO_NAME }}
           DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
 
-          echo "===== 检查应用状态 ====="
+          echo "===== 应用健康检查 ====="
           cd $DEPLOY_PATH
-          # 检查应用是否在运行
-          if pm2 show $REPO_NAME | grep -q "online"; then
-            echo "✅ 应用已成功启动并运行中"
-            echo "内存使用: $(pm2 show $REPO_NAME | grep memory | awk '{print $4}')"
-            echo "CPU使用: $(pm2 show $REPO_NAME | grep cpu | awk '{print $2}')"
-            echo "运行时间: $(pm2 show $REPO_NAME | grep uptime | awk '{print $2, $3, $4}')"
+          
+          # 检查 PM2 应用状态
+          echo "🔍 PM2 应用状态:"
+          pm2 status
+          
+          # 检查具体应用状态
+          HEALTH_CHECK_FAILED=0
+          
+          # 检查 API Server
+          if pm2 show mcp-api-server 2>/dev/null | grep -q "online"; then
+            echo "✅ API Server (mcp-api-server) 运行正常"
+            API_MEMORY=$(pm2 show mcp-api-server | grep memory | awk '{print $4}' || echo 'unknown')
+            API_CPU=$(pm2 show mcp-api-server | grep cpu | awk '{print $2}' || echo 'unknown')
+            echo "   📊 内存使用: $API_MEMORY"
+            echo "   🔧 CPU使用: $API_CPU"
           else
-            echo "❌ 应用启动失败"
-            pm2 show $REPO_NAME
+            echo "❌ API Server (mcp-api-server) 运行异常"
+            HEALTH_CHECK_FAILED=1
+          fi
+          
+          # 检查 Web App
+          if pm2 show mcp-web-app 2>/dev/null | grep -q "online"; then
+            echo "✅ Web App (mcp-web-app) 运行正常"
+            WEB_MEMORY=$(pm2 show mcp-web-app | grep memory | awk '{print $4}' || echo 'unknown')
+            WEB_CPU=$(pm2 show mcp-web-app | grep cpu | awk '{print $2}' || echo 'unknown')
+            echo "   📊 内存使用: $WEB_MEMORY"
+            echo "   🔧 CPU使用: $WEB_CPU"
+          else
+            echo "❌ Web App (mcp-web-app) 运行异常"
+            HEALTH_CHECK_FAILED=1
+          fi
+          
+          # 网络端口检查
+          echo "🌐 网络端口检查:"
+          if netstat -tlnp 2>/dev/null | grep ":9906 " > /dev/null; then
+            echo "✅ API Server 端口 9906 已开放"
+          else
+            echo "❌ API Server 端口 9906 未开放"
+            HEALTH_CHECK_FAILED=1
+          fi
+          
+          if netstat -tlnp 2>/dev/null | grep ":9905 " > /dev/null; then
+            echo "✅ Web App 端口 9905 已开放"
+          else
+            echo "❌ Web App 端口 9905 未开放"
+            HEALTH_CHECK_FAILED=1
+          fi
+          
+          # HTTP 健康检查
+          echo "💚 HTTP 健康检查:"
+          if curl -f -s -m 10 http://localhost:9906/health > /dev/null; then
+            echo "✅ API Server 健康检查通过"
+          else
+            echo "❌ API Server 健康检查失败"
+            HEALTH_CHECK_FAILED=1
+          fi
+          
+          # 总结健康检查结果
+          if [ $HEALTH_CHECK_FAILED -eq 0 ]; then
+            echo "🎉 所有健康检查通过"
+          else
+            echo "💥 健康检查发现问题"
             exit 1
           fi
+
+      - name: 部署结果总结
+        if: always()
+        run: |
+          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          REPO_NAME=${{ needs.build.outputs.REPO_NAME }}
+          
+          echo "===== MCP Panel 部署结果总结 ====="
+          echo "🕐 部署时间: $(date)"
+          echo "📦 项目名称: $REPO_NAME"
+          echo "🔄 Git 分支: ${GITHUB_REF#refs/heads/}"
+          echo "💻 运行环境: centos2-vs-com"
+          
+          # 检查最终状态
+          FINAL_STATUS="成功"
+          
+          if ! pm2 show mcp-api-server 2>/dev/null | grep -q "online"; then
+            FINAL_STATUS="失败"
+          fi
+          
+          if ! pm2 show mcp-web-app 2>/dev/null | grep -q "online"; then
+            FINAL_STATUS="失败"
+          fi
+          
+          echo "📊 部署状态: $FINAL_STATUS"
+          
+          if [ "$FINAL_STATUS" = "成功" ]; then
+            echo ""
+            echo "🎉 MCP Panel 部署成功！"
+            echo "📊 API Server: http://localhost:9906"
+            echo "🌐 Web App: http://localhost:9905"
+            echo "💚 健康检查: http://localhost:9906/health"
+            echo "📋 MCP 管理: http://localhost:9905"
+            echo ""
+            echo "🔧 管理命令:"
+            echo "  - 查看状态: pm2 status"
+            echo "  - 查看日志: pm2 logs"
+            echo "  - 重启服务: pm2 restart ecosystem.config.cjs"
+            echo "  - 停止服务: pm2 stop ecosystem.config.cjs"
+          else
+            echo "💥 部署失败，请检查上述错误信息"
+            exit 1
+          fi
+          
           echo "===== 部署完成 ====="
