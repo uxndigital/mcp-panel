@@ -1,39 +1,52 @@
 # MCP Panel
 
-一个用于管理 Model Context Protocol (MCP) 服务器的管理面板。
+一个用于管理 Model Context Protocol (MCP) 服务器的现代化管理面板，支持通过 GitHub 仓库安装、更新和管理 MCP 服务器。
 
-## 项目结构
+## ✨ 功能特性
+
+- 🚀 **一键安装** - 通过 GitHub URL 快速安装 MCP 服务器
+- 🔄 **智能更新** - 自动检测并更新 MCP 到最新版本
+- 🗑️ **安全卸载** - 完全移除 MCP 服务器及其依赖
+- 📊 **元数据跟踪** - 记录 Git URL、版本、提交哈希、安装时间
+- 🔌 **独立端点** - 为每个 MCP 提供独立的 HTTP 端点
+- 🎨 **现代化 UI** - 基于 React 的美观管理界面
+- ⚡ **PM2 部署** - 生产级进程管理和监控
+- 🔧 **依赖隔离** - 每个 MCP 独立管理依赖，避免冲突
+
+## 📁 项目结构
 
 ```
 mcp-panel/
+├── api-server/              # Express API 服务器
+│   ├── src/
+│   │   ├── index.ts         # API 服务器入口
+│   │   ├── services/        # MCP 管理服务
+│   │   │   └── mcp-manager.ts
+│   │   └── mcp/             # MCP 实例存储目录
+│   ├── package.json
+│   └── tsconfig.json
+├── web-app/                 # React 前端应用
+│   ├── src/
+│   │   ├── App.tsx          # 主应用组件
+│   │   └── main.tsx
+│   ├── public/
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── index.html
 ├── packages/
-│   ├── api-server/          # Express API 服务器
-│   │   ├── src/
-│   │   │   ├── index.ts     # API 服务器入口
-│   │   │   ├── services/    # MCP 管理服务
-│   │   │   └── mcp/         # MCP 实例存储
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   ├── web-app/             # React 前端应用
-│   │   ├── src/
-│   │   ├── public/
-│   │   ├── package.json
-│   │   ├── vite.config.ts
-│   │   └── index.html
-│   └── mcp-server/          # MCP 服务器核心
+│   └── mcp-server/          # MCP 服务器核心库
+├── ecosystem.config.cjs     # PM2 配置文件
 ├── package.json             # 根目录配置
 └── pnpm-workspace.yaml     # pnpm workspace 配置
 ```
 
-## 功能特性
+## 🚀 快速开始
 
-- 🚀 通过 GitHub URL 安装 MCP 服务器
-- 🗑️ 卸载已安装的 MCP 服务器
-- 📋 查看所有已安装的 MCP 端点
-- 🔌 为每个 MCP 提供独立的 HTTP 端点
-- 🌐 现代化的 React 前端界面
+### 环境要求
 
-## 快速开始
+- Node.js 18+ 
+- pnpm 8+
+- PM2 (可选，用于生产部署)
 
 ### 安装依赖
 
@@ -41,118 +54,187 @@ mcp-panel/
 pnpm install
 ```
 
-### 开发模式（同时启动 API 和前端）
+### 开发模式
+
+同时启动 API 服务器和前端应用：
 
 ```bash
 pnpm run dev
 ```
 
 这将启动：
-- API 服务器: `http://localhost:3001`
-- 前端应用: `http://localhost:9904`
+- API 服务器: `http://localhost:9906`
+- 前端应用: `http://localhost:9905` (开发模式)
 
-### 单独启动服务
+单独启动服务：
 
 ```bash
 # 只启动 API 服务器
 pnpm run dev:api
 
-# 只启动前端应用
+# 只启动前端应用  
 pnpm run dev:web
 ```
 
-### 生产构建
+### 生产部署
+
+#### 方式一：使用 PM2（推荐）
 
 ```bash
-# 构建所有项目
+# 构建项目
 pnpm run build
 
-# 启动生产环境
-pnpm run start
+# 使用 PM2 启动
+pnpm start
+
+# 查看运行状态
+pnpm run monitor:pm2
+
+# 查看日志
+pnpm run logs:pm2
+
+# 停止服务
+pnpm run stop:pm2
+
+# 重启服务
+pnpm run restart:pm2
 ```
 
-## API 端点
+#### 方式二：传统启动
+
+```bash
+# 构建项目
+pnpm run build
+
+# 启动服务
+pnpm run start:all
+```
+
+## 📋 API 端点
 
 ### MCP 管理 API
 
-- `POST /api/mcp/install` - 安装 MCP 服务器
-- `DELETE /api/mcp/uninstall/{name}` - 卸载 MCP 服务器
-- `GET /api/mcp/list` - 获取已安装的 MCP 列表
-- `GET /health` - 健康检查
+| 方法 | 端点 | 描述 |
+|------|------|------|
+| `POST` | `/api/mcp/install` | 安装 MCP 服务器 |
+| `PUT` | `/api/mcp/update/{name}` | 更新 MCP 服务器 |
+| `DELETE` | `/api/mcp/uninstall/{name}` | 卸载 MCP 服务器 |
+| `GET` | `/api/mcp/list` | 获取已安装的 MCP 列表 |
+| `GET` | `/health` | 健康检查 |
 
 ### MCP 服务端点
 
-每个安装的 MCP 服务器都会有一个独立的端点：
-- `POST /mcp/{name}` - 与特定 MCP 服务器通信
+每个安装的 MCP 服务器都有独立的端点：
+- `POST/GET` `/{mcpName}/mcp` - 与特定 MCP 服务器通信
 
-## 开发命令
+## 🎯 使用方法
+
+### 1. 安装 MCP 服务器
+
+在前端界面中输入 GitHub 仓库 URL，例如：
+```
+https://github.com/example/my-mcp-server
+```
+
+系统会自动：
+- 克隆仓库代码
+- 安装依赖并构建
+- 记录 Git 元数据（提交哈希、版本、安装时间）
+- 创建独立的端点 `/my-mcp-server/mcp`
+
+### 2. 更新 MCP 服务器
+
+点击 MCP 卡片上的"更新"按钮：
+- 自动拉取最新代码
+- 检查是否有更新
+- 重新构建并热重载
+- 更新元数据信息
+- 如果更新失败会自动回滚
+
+### 3. 管理 MCP 服务器
+
+每个 MCP 卡片显示：
+- 📛 **名称和版本** - 显示项目名称和版本标签
+- 🔗 **Git URL** - 可点击的源代码链接  
+- 📝 **提交信息** - 当前运行的提交哈希
+- 📅 **安装时间** - 首次安装或最后更新时间
+- 🌐 **API 端点** - 服务器访问地址
+
+## 🔧 开发命令
 
 ```bash
 # 安装所有依赖
 pnpm install:all
 
-# 开发模式（并发启动）
+# 开发模式（热重载）
 pnpm run dev
 
-# 单独启动 API 服务器
-pnpm run dev:api
-
-# 单独启动前端应用
-pnpm run dev:web
-
-# 构建所有项目
+# 构建所有项目  
 pnpm run build
-
-# 启动生产环境
-pnpm run start
 
 # 代码检查
 pnpm run lint
 
 # 清理构建文件
 pnpm run clean
+
+# PM2 管理
+pnpm run start:pm2    # 启动
+pnpm run stop:pm2     # 停止  
+pnpm run restart:pm2  # 重启
+pnpm run delete:pm2   # 删除
+pnpm run logs:pm2     # 查看日志
+pnpm run monitor:pm2  # 监控面板
 ```
 
-## 技术栈
+## 📦 PM2 配置
 
-### API 服务器
-- **Node.js** + **TypeScript**
+项目包含完整的 PM2 配置文件 `ecosystem.config.cjs`：
+
+- **自动重启** - 进程崩溃时自动重启
+- **内存监控** - 超过限制自动重启
+- **日志管理** - 自动分割和管理日志文件
+- **多实例** - 支持集群模式（可配置）
+- **环境变量** - 支持开发和生产环境
+
+## 🛠️ 技术栈
+
+### 后端
+- **Node.js** + **TypeScript** - 现代 JavaScript 运行时
 - **Express.js** - Web 框架
-- **@modelcontextprotocol/sdk** - MCP SDK
+- **@modelcontextprotocol/sdk** - MCP 官方 SDK
+- **pnpm** - 高效的包管理器
 
-### 前端应用
-- **React 19** + **TypeScript**
-- **Vite** - 构建工具
-- **现代化 UI** - 响应式设计
+### 前端  
+- **React 19** - 用户界面库
+- **TypeScript** - 类型安全
+- **Vite** - 快速构建工具
+- **现代化 CSS** - 响应式设计
 
-## 架构说明
+### 部署
+- **PM2** - 生产级进程管理
+- **pnpm Workspaces** - Monorepo 管理
+- **独立依赖** - 每个 MCP 项目隔离依赖
 
-1. **API 服务器** (`packages/api-server`): 
-   - 处理 MCP 的安装、卸载和管理
-   - 为每个 MCP 提供 HTTP 端点
-   - 使用 Express.js 构建 RESTful API
+## 🔒 安全特性
 
-2. **前端应用** (`packages/web-app`):
-   - React 单页应用
-   - 通过 Vite 代理与 API 服务器通信
-   - 提供用户友好的管理界面
+- **依赖隔离** - 每个 MCP 使用独立的 node_modules
+- **权限管理** - 安全的文件系统操作
+- **错误处理** - 完善的错误恢复机制
+- **回滚支持** - 更新失败自动回滚到上一版本
 
-3. **MCP 服务器** (`packages/mcp-server`):
-   - MCP 协议的核心实现
-   - 处理与 MCP 实例的通信
+## 📝 注意事项
 
-## 配置
+1. **Git 仓库要求** - MCP 项目必须是有效的 Git 仓库
+2. **构建脚本** - MCP 项目需要包含 `build` 脚本
+3. **入口文件** - 构建后需要 `dist/src/index.js` 文件
+4. **端口配置** - API 服务器默认端口 9906，前端端口 9905
+5. **存储位置** - MCP 安装在 `api-server/src/mcp/` 目录
 
-### 环境变量
+## 🤝 贡献
 
-API 服务器支持以下环境变量：
+欢迎提交 Issue 和 Pull Request！
 
-```bash
-PORT=3001  # API 服务器端口
-```
+## �� 许可证
 
-### 端口配置
-
-- API 服务器默认端口: `3001`
-- 前端应用默认端口: `9904`
-- 前端会自动代理 `/api` 和 `/mcp` 请求到 API 服务器
+MIT License
