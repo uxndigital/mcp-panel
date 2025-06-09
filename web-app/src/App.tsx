@@ -52,8 +52,10 @@ function App() {
   // 卸载 MCP
   const uninstallMcp = async (endpoint: string) => {
     try {
-      const encodedEndpoint = encodeURIComponent(endpoint.substring(1)) // 移除开头的 /
-      const response = await fetch(`/api/mcp/uninstall/${encodedEndpoint}`, {
+      // 新格式: /puppeteer-mcp/mcp -> 提取 puppeteer-mcp
+      const mcpName = endpoint.replace(/^\//, '').replace(/\/mcp$/, '');
+      const encodedMcpName = encodeURIComponent(mcpName);
+      const response = await fetch(`/api/mcp/uninstall/${encodedMcpName}`, {
         method: 'DELETE'
       })
       

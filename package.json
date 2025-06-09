@@ -4,15 +4,24 @@
   "version": "0.0.0",
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "api-server",
+    "web-app"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "pnpm run dev:all",
+    "dev:all": "concurrently \"pnpm run dev:api\" \"pnpm run dev:web\"",
+    "dev:api": "pnpm --filter @mcp-panel/api-server dev",
+    "dev:web": "pnpm --filter @mcp-panel/web-app dev",
+    "build": "pnpm run build:all",
     "build:all": "pnpm -r build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "clean": "pnpm -r exec rm -rf dist node_modules && rm -rf node_modules"
+    "start": "pnpm run start:all",
+    "start:all": "concurrently \"pnpm run start:api\" \"pnpm run start:web\"",
+    "start:api": "pnpm --filter @mcp-panel/api-server start",
+    "start:web": "pnpm --filter @mcp-panel/web-app preview",
+    "lint": "pnpm -r lint",
+    "clean": "pnpm -r exec rm -rf dist node_modules && rm -rf node_modules",
+    "install:all": "pnpm install"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
@@ -27,6 +36,7 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^8.2.2",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
