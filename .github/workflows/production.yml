@@ -50,7 +50,16 @@ jobs:
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_OUTPUT
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
           echo "📦 仓库名称: $REPO_NAME"
-
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3 # docs https://pnpm.io/continuous-integration#github-actions
+        with:
+          version: 9.1.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: 获取 pnpm store 路径
         id: pnpm-store-path
         run: |
