@@ -1,0 +1,149 @@
+name: Build VS Prod Server (centos2-vs-com)
+
+on:
+  push:
+    branches: ['main']
+    paths-ignore: # Add paths to ignore
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  workflow_dispatch:
+
+jobs:
+  # 构建作业
+  build:
+    runs-on: centos2-vs-com
+    # Add concurrency to cancel redundant runs
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    env:
+      PATH: /bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v22.14.0/bin:/home/${{ secrets.SERVER_USERNAME }}/.local/share/pnpm:$PATH
+      DEPLOY_ENV: production
+      DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT }}
+    steps:
+      - name: Check user and permissions
+        run: |
+          echo "当前用户: $(whoami)"
+          echo "用户ID: $(id)"
+          echo "当前目录: $(pwd)"
+          echo "主目录: $HOME"
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
+          # 检查git配置
+          git config --list
+          # 检查 ${DEPLOY_PATH} 是否为git仓库
+          if [ -d "${DEPLOY_PATH}/.git" ]; then
+            echo "${DEPLOY_PATH} 是一个git仓库"
+          else
+            echo "${DEPLOY_PATH} 不是一个git仓库"
+          fi
+
+      - name: Get pnpm store path
+        id: pnpm-store-path
+        run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Install and Build dependencies
+        run: |
+          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
+          echo $DEPLOY_PATH
+          echo $REPO_NAME
+
+          # 确保部署目录存在
+          mkdir -p $DEPLOY_PATH
+
+          # 如果不是git仓库,则初始化
+          if [ ! -d "$DEPLOY_PATH/.git" ]; then
+            cd $DEPLOY_PATH
+            git init
+            git remote add origin git@github.com:$GITHUB_REPOSITORY.git
+          fi
+
+          cd $DEPLOY_PATH
+          # 设置安全目录
+          git config --global --add safe.directory $DEPLOY_PATH
+          # 使用fetch和reset代替pull以避免锁文件问题
+          git fetch origin ${GITHUB_REF#refs/heads/}
+          git reset --hard origin/${GITHUB_REF#refs/heads/}
+
+          if [ -f "./pnpm-lock.deploy.yaml" ]; then
+            mv ./pnpm-lock.deploy.yaml ./pnpm-lock.yaml
+          fi
+          pnpm install --frozen-lockfile
+          # pnpm build
+          pwd
+          ls -lash
+
+  deploy:
+    # 依赖于构建作业
+    needs: build
+    runs-on: centos2-vs-com
+    env:
+      DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT }}
+      BASE_PATH: ${{ vars.BASE_PATH }}
+    steps:
+      - name: pm2
+        env:
+          DEPLOY_ENV: production
+          PATH: /bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v22.14.0/bin:/home/${{ secrets.SERVER_USERNAME }}/.local/share/pnpm:$PATH
+        run: |
+          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
+          cd $DEPLOY_PATH
+          echo "仓库名称: $REPO_NAME"
+
+          if [ -f "ecosystem.config.cjs" ]; then
+            echo "ecosystem.config.cjs配置文件"
+            # Ensure PM2 can find the script
+            # npm run sse --dry-run || echo "Script check failed but continuing"
+            pm2 delete $REPO_NAME || true
+            pm2 start ecosystem.config.cjs --env ${DEPLOY_ENV} --update-env
+          else
+            echo "ecosystem.config.cjs, 使用默认配置启动"
+            pm2 start npm --name ${REPO_NAME} -- run start
+          fi
+          pm2 reset ${REPO_NAME} || true
+
+      - name: 监控应用日志
+        run: |
+          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
+
+          echo "===== 应用日志 (10秒) ====="
+          cd $DEPLOY_PATH
+          # 清除旧日志以便查看最新日志
+          pm2 flush $REPO_NAME
+          # 等待应用启动并生成日志
+          sleep 3
+          # 获取最新日志
+          pm2 logs $REPO_NAME --lines 100 --raw &
+          LOG_PID=$!
+          # 等待10秒
+          sleep 10
+          # 终止日志进程
+          kill $LOG_PID 2>/dev/null || true
+
+      - name: 检查应用状态
+        run: |
+          source /home/${{ secrets.SERVER_USERNAME }}/.bashrc
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          DEPLOY_PATH=$DEPLOY_ROOT/${REPO_NAME}
+
+          echo "===== 检查应用状态 ====="
+          cd $DEPLOY_PATH
+          # 检查应用是否在运行
+          if pm2 show $REPO_NAME | grep -q "online"; then
+            echo "✅ 应用已成功启动并运行中"
+            echo "内存使用: $(pm2 show $REPO_NAME | grep memory | awk '{print $4}')"
+            echo "CPU使用: $(pm2 show $REPO_NAME | grep cpu | awk '{print $2}')"
+            echo "运行时间: $(pm2 show $REPO_NAME | grep uptime | awk '{print $2, $3, $4}')"
+          else
+            echo "❌ 应用启动失败"
+            pm2 show $REPO_NAME
+            exit 1
+          fi
+          echo "===== 部署完成 ====="

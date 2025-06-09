@@ -235,6 +235,51 @@ pnpm run monitor:pm2  # 监控面板
 
 欢迎提交 Issue 和 Pull Request！
 
+## 🚀 GitHub Workflows
+
+项目包含完整的 CI/CD 流水线：
+
+### CI 流水线 (`.github/workflows/ci.yml`)
+- **触发时机**: Push 到 main/develop 分支或 Pull Request
+- **检查内容**:
+  - 🔍 代码风格检查 (ESLint)
+  - 🏗️ TypeScript 类型检查
+  - 📦 项目构建验证
+  - 🔧 PM2 配置验证
+  - 🔒 安全审计
+  - 📁 项目结构验证
+
+### 生产部署 (`.github/workflows/production-mcp.yml`)
+- **触发时机**: Push 到 main 分支
+- **部署流程**:
+  - 📥 代码同步和依赖安装
+  - 🏗️ 项目构建
+  - 🚀 PM2 部署
+  - 📊 应用状态监控
+  - 💚 健康检查
+  - 📝 部署结果总结
+
+### 定期维护 (`.github/workflows/maintenance.yml`)
+- **触发时机**: 每周日凌晨 2 点自动运行
+- **维护内容**:
+  - 📦 依赖更新检查
+  - 🔒 安全漏洞扫描
+  - 💚 生产环境健康检查
+  - 🗑️ 日志清理
+  - 💻 系统资源监控
+  - 💾 备份状态检查
+
+### 环境变量配置
+
+需要在 GitHub Repository Settings 中配置：
+
+#### Secrets
+- `SERVER_USERNAME`: 服务器用户名
+
+#### Variables  
+- `DEPLOY_ROOT`: 部署根目录路径
+- `BASE_PATH`: 应用基础路径（可选）
+
 ## �� 许可证
 
 MIT License
