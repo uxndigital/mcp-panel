@@ -1,13 +1,18 @@
 {
-  "name": "mcp-panel-2",
+  "name": "mcp-panel-workspace",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:all": "pnpm -r build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "pnpm -r exec rm -rf dist node_modules && rm -rf node_modules"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

@@ -99,7 +99,9 @@ export class McpManager {
   }
 
   async uninstallMcp(endpoint: string): Promise<void> {
+    console.log(endpoint, 'endpoint');
     const mcpDir = this.mcpEndpoints.get(endpoint);
+    console.log(mcpDir, 'mcpDir');
     if (mcpDir) {
       try {
         // 删除目录
