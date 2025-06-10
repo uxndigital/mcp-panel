@@ -63,8 +63,8 @@ pnpm run dev
 ```
 
 这将启动：
-- API 服务器: `http://localhost:9906`
-- 前端应用: `http://localhost:9905` (开发模式)
+- API 服务器: `http://localhost:9800`
+- 前端应用: `http://localhost:9801` (开发模式)
 
 单独启动服务：
 
@@ -228,7 +228,7 @@ pnpm run monitor:pm2  # 监控面板
 1. **Git 仓库要求** - MCP 项目必须是有效的 Git 仓库
 2. **构建脚本** - MCP 项目需要包含 `build` 脚本
 3. **入口文件** - 构建后需要 `dist/src/index.js` 文件
-4. **端口配置** - API 服务器默认端口 9906，前端端口 9905
+4. **端口配置** - API 服务器默认端口 9800，前端端口 9801
 5. **存储位置** - MCP 安装在 `api-server/src/mcp/` 目录
 
 ## 🤝 贡献

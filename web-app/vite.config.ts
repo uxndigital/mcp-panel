@@ -7,18 +7,18 @@ import path from "path";
 export default defineConfig({
   plugins: [react(), wyw()],
   server: {
-    port: 9905,
+    port: 9801,
     host: true,
     proxy: {
       // 代理所有 /api 请求到 API 服务器
       "/api": {
-        target: "http://localhost:9906",
+        target: "http://localhost:9800",
         changeOrigin: true,
         rewrite: (path) => path,
       },
       // 代理所有 /:name/mcp 请求到 API 服务器
       "/*/mcp": {
-        target: "http://localhost:9906",
+        target: "http://localhost:9800",
         changeOrigin: true,
         rewrite: (path) => path,
       },

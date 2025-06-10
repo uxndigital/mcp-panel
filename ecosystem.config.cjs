@@ -10,11 +10,11 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 9906
+        PORT: 9800
       },
       env_development: {
         NODE_ENV: 'development',
-        PORT: 9906
+        PORT: 9800
       },
       log_date_format: 'YYYY-MM-DD HH:mm Z',
       error_file: './logs/api-server-error.log',
@@ -25,7 +25,7 @@ module.exports = {
     {
       name: 'mcp-web-app',
       script: 'npx',
-      args: 'vite preview --port 9905 --host',
+      args: 'vite preview --port 9801 --host',
       cwd: './web-app',
       instances: 1,
       autorestart: true,
