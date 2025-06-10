@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { McpManager } from "./services/mcp-manager.js";
-import { Server } from "../../packages/mcp-server/src/streamable-http.js";
+import { Server } from "@uxn/mcp-server/src/streamable-http.js";
 
 const app = express();
 const PORT = process.env.PORT || 9906;
