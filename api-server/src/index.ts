@@ -4,7 +4,7 @@ import { McpManager } from "./services/mcp-manager.js";
 import { Server } from "@uxn/mcp-server/src/streamable-http.js";
 
 const app = express();
-const PORT = process.env.PORT || 9906;
+const PORT = process.env.PORT || 9800;
 
 // 中间件
 app.use(cors());
