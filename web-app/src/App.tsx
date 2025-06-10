@@ -141,9 +141,12 @@ function App() {
       {/* <div className="App"> */}
       <aside>
         <h1 className="app-title">MCP 管理面板</h1>
-      </aside>
-      <main className="app-content">
-        <Flex className="mcp-install" justify="flex-end">
+        <Flex
+          className="mcp-install"
+          direction="column"
+          justify="flex-end"
+          gap="12px"
+        >
           <Input
             className="mcp-install-input"
             type="text"
@@ -159,7 +162,8 @@ function App() {
             {loading ? "安装中..." : "安装"}
           </Button>
         </Flex>
-
+      </aside>
+      <main className="app-content">
         <div className="mcp-list">
           <Flex
             justify="space-between"

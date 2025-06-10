@@ -10,7 +10,7 @@ const container = css`
   flex: 1;
   width: 100%;
   height: 36px;
-  padding: 4px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   border: 1px solid hsl(var(--input));
   font-size: 14px;

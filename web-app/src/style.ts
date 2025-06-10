@@ -4,7 +4,16 @@ export const container = css`
   height: 100vh;
 
   .app-title {
+    padding: 8px 16px;
+  }
+
+  .mcp-install {
     padding: 16px;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .mcp-install-input {
+    width: 287px;
   }
 
   .app-content {
@@ -13,18 +22,8 @@ export const container = css`
     border-left: 1px solid hsl(var(--border));
   }
 
-  .mcp-install {
-    margin-bottom: 16px;
-  }
-
-  .mcp-install-input {
-    width: 300px;
-    margin-right: 10px;
-  }
-
   .mcp-list-header {
-    padding: 16px 0;
-    border-top: 1px solid hsl(var(--border));
+    padding-bottom: 16px;
   }
 
   .mcp-list-container {
