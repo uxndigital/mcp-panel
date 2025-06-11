@@ -23,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
+# MCP installations and packages - excluded from version control
 api-server/src/mcp/
+packages/
