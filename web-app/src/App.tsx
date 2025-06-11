@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
-import "./App.css";
-import { Flex } from "@uxndigital/ui-essentials";
-import { container } from "./style";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
+import './App.css';
+
+import { Flex } from '@uxndigital/ui-essentials';
+import { useEffect, useState } from 'react';
+
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+
+import { container } from './style';
 
 interface McpInfo {
   name: string;
@@ -20,18 +23,18 @@ interface McpListResponse {
 
 function App() {
   const [mcps, setMcps] = useState<McpInfo[]>([]);
-  const [githubUrl, setGithubUrl] = useState("");
+  const [githubUrl, setGithubUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [updatingMcps, setUpdatingMcps] = useState<Set<string>>(new Set());
 
   // 获取 MCP 列表
   const fetchMcps = async () => {
     try {
-      const response = await fetch("/api/mcp/list");
+      const response = await fetch('/api/mcp/list');
       const data: McpListResponse = await response.json();
       setMcps(data.mcps);
     } catch (error) {
-      console.error("获取 MCP 列表失败:", error);
+      console.error('获取 MCP 列表失败:', error);
     }
   };
 
@@ -41,24 +44,24 @@ function App() {
 
     setLoading(true);
     try {
-      const response = await fetch("/api/mcp/install", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/mcp/install', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ githubUrl }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log("安装成功:", data.endpoint);
-        setGithubUrl("");
+        console.log('安装成功:', data.endpoint);
+        setGithubUrl('');
         await fetchMcps();
       } else {
         const error = await response.json();
-        console.error("安装失败:", error.error);
+        console.error('安装失败:', error.error);
         alert(`安装失败: ${error.error}`);
       }
     } catch (error) {
-      console.error("安装失败:", error);
+      console.error('安装失败:', error);
       alert(`安装失败: ${error}`);
     } finally {
       setLoading(false);
@@ -73,21 +76,21 @@ function App() {
     try {
       const encodedMcpName = encodeURIComponent(mcpName);
       const response = await fetch(`/api/mcp/update/${encodedMcpName}`, {
-        method: "PUT",
+        method: 'PUT',
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log("更新成功:", data.metadata);
+        console.log('更新成功:', data.metadata);
         alert(`更新成功! 新版本: ${data.metadata.commit.substring(0, 8)}`);
         await fetchMcps();
       } else {
         const error = await response.json();
-        console.error("更新失败:", error.error);
+        console.error('更新失败:', error.error);
         alert(`更新失败: ${error.error}`);
       }
     } catch (error) {
-      console.error("更新失败:", error);
+      console.error('更新失败:', error);
       alert(`更新失败: ${error}`);
     } finally {
       setUpdatingMcps((prev) => {
@@ -107,25 +110,25 @@ function App() {
     try {
       const encodedMcpName = encodeURIComponent(mcpInfo.name);
       const response = await fetch(`/api/mcp/uninstall/${encodedMcpName}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
 
       if (response.ok) {
-        console.log("卸载成功");
+        console.log('卸载成功');
         await fetchMcps();
       } else {
         const error = await response.json();
-        console.error("卸载失败:", error.error);
+        console.error('卸载失败:', error.error);
         alert(`卸载失败: ${error.error}`);
       }
     } catch (error) {
-      console.error("卸载失败:", error);
+      console.error('卸载失败:', error);
       alert(`卸载失败: ${error}`);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("zh-CN");
+    return new Date(dateString).toLocaleString('zh-CN');
   };
 
   const formatCommit = (commit: string) => {
@@ -159,7 +162,7 @@ function App() {
             disabled={loading || !githubUrl.trim()}
             variant="outline"
           >
-            {loading ? "安装中..." : "安装"}
+            {loading ? '安装中...' : '安装'}
           </Button>
         </Flex>
       </aside>
@@ -224,7 +227,7 @@ function App() {
                         variant="outline"
                         disabled={updatingMcps.has(mcp.name)}
                       >
-                        {updatingMcps.has(mcp.name) ? "更新中..." : "更新"}
+                        {updatingMcps.has(mcp.name) ? '更新中...' : '更新'}
                       </Button>
                       <Button
                         onClick={() => uninstallMcp(mcp)}
