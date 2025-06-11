@@ -11,14 +11,24 @@ export default defineConfig({
     host: true,
     proxy: {
       // 代理所有 /api 请求到 API 服务器
+<<<<<<< HEAD
       '/api': {
         target: 'http://localhost:9800',
+=======
+      "/api": {
+        target: "http://localhost:9800",
+>>>>>>> 615ae73 (feat(leo): use mcp-server)
         changeOrigin: true,
         rewrite: (path) => path,
       },
       // 代理所有 /:name/mcp 请求到 API 服务器
+<<<<<<< HEAD
       '/*/mcp': {
         target: 'http://localhost:9800',
+=======
+      "/*/mcp": {
+        target: "http://localhost:90800",
+>>>>>>> 615ae73 (feat(leo): use mcp-server)
         changeOrigin: true,
         rewrite: (path) => path,
       },
