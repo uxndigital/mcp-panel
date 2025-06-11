@@ -1,4 +1,4 @@
-import { Server } from '@uxndigital/mcp-server/dist/src/streamable-http.js';
+import { Server } from '@uxndigital/mcp-server';
 import cors from 'cors';
 import express from 'express';
 

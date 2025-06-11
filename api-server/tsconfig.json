@@ -20,7 +20,6 @@
   },
   "include": [
     "src/**/*",
-    "@uxn/mcp-server/src/streamable-http.js"
   ],
   "exclude": [
     "node_modules",
