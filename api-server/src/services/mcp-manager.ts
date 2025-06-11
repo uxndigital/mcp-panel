@@ -126,7 +126,7 @@ export class McpManager {
       console.log(`🔄 开始安装 MCP: ${repoName}`);
 
       // 克隆仓库
-      await execAsync(`git clone ${githubUrl} ${mcpDir}`);
+      await execAsync(`git clone ${githubUrl.replace("https://github.com/", "git@github.com:").replace(/([^\.])$/, "$1.git")} ${mcpDir}`);
 
       // 获取 Git 信息
       const gitInfo = await this.getGitInfo(mcpDir);
