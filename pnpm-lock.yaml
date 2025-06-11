@@ -2916,6 +2916,18 @@ snapshots:
       - debug
       - supports-color
 
+  '@uxndigital/mcp-server@0.1.0':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.12.1
+      axios: 1.9.0
+      eventsource-parser: 3.0.2
+      form-data: 4.0.3
+      uuid: 11.1.0
+      zod: 3.25.51
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
   '@uxndigital/ui-essentials@0.0.8(@linaria/core@6.3.0)(@linaria/react@6.3.0(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@linaria/core': 6.3.0
