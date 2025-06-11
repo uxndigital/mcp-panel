@@ -20,7 +20,10 @@
   },
   "include": [
     "src/**/*",
+<<<<<<< HEAD
     "@uxn/mcp-server/src/streamable-http.js"
+=======
+>>>>>>> 615ae73 (feat(leo): use mcp-server)
   ],
   "exclude": [
     "node_modules",

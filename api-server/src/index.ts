@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Server } from '@uxndigital/mcp-server/dist/src/streamable-http.js';
+=======
+import { Server } from '@uxndigital/mcp-server';
+>>>>>>> 615ae73 (feat(leo): use mcp-server)
 import cors from 'cors';
 import express from 'express';
 
@@ -120,6 +124,10 @@ app.use(
     res: express.Response
     // _next: express.NextFunction
   ) => {
+<<<<<<< HEAD
+=======
+    console.log(res, 'res');
+>>>>>>> 615ae73 (feat(leo): use mcp-server)
     console.error('❌ MCP API Error:', error);
     res.status(500).json({
       error: error.message || 'Internal server error',
@@ -162,4 +170,8 @@ process.on('SIGTERM', async () => {
 startServer().catch((error) => {
   console.error('❌ 启动服务器失败:', error);
   process.exit(1);
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 615ae73 (feat(leo): use mcp-server)
