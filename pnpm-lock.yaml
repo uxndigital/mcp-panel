@@ -85,12 +85,6 @@ importers:
 
   web-app:
     dependencies:
-      '@linaria/core':
-        specifier: ^6.3.0
-        version: 6.3.0
-      '@linaria/react':
-        specifier: ^6.3.0
-        version: 6.3.0(react@19.1.0)
       '@uxndigital/ui-essentials':
         specifier: ^0.0.8
         version: 0.0.8(@linaria/core@6.3.0)(@linaria/react@6.3.0(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -101,6 +95,12 @@ importers:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
     devDependencies:
+      '@linaria/core':
+        specifier: ^6.3.0
+        version: 6.3.0
+      '@linaria/react':
+        specifier: ^6.3.0
+        version: 6.3.0(react@19.1.0)
       '@types/react':
         specifier: ^19.1.2
         version: 19.1.7

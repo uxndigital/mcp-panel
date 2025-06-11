@@ -21,10 +21,11 @@ const commonConfig: Linter.Config = {
     },
   },
   rules: {
-    'key-spacing': ['error', { align: 'value' }],
-    'no-constant-condition': 'warn',
     'prefer-spread': 'off',
-    'prettier/prettier': ['error', {}, { usePrettierrc: true }],
+    eqeqeq: 'off',
+    'no-unused-vars': 'off',
+    'no-constant-condition': ['warn'],
+    'prettier/prettier': ['error', {}, { usePrettierrc: true }], // Includes .prettierrc.js rules
   },
 };
 
@@ -40,7 +41,11 @@ const typescriptConfig: Linter.Config = {
     },
   },
   rules: {
-    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {
@@ -61,10 +66,6 @@ const typescriptConfig: Linter.Config = {
           match: false,
         },
       },
-      {
-        selector: 'typeAlias',
-        format: ['PascalCase'],
-      },
     ],
   },
 };
@@ -75,7 +76,25 @@ const simpleImportSortConfig: Linter.Config = {
     'simple-import-sort': simpleImportSort,
   },
   rules: {
-    'simple-import-sort/imports': 'error',
+    'simple-import-sort/imports': [
+      'error',
+      {
+        groups: [
+          // Packages `react` related packages come first.
+          ['^react', '^@?\\w'],
+          // Internal packages.
+          ['^(@|components)(/.*|$)'],
+          // Side effect imports.
+          ['^\\u0000'],
+          // Parent imports. Put `..` last.
+          ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
+          // Other relative imports. Put same-folder imports and `.` last.
+          ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
+          // Style imports.
+          ['^.+\\.?(css)$'],
+        ],
+      },
+    ],
     'simple-import-sort/exports': 'error',
   },
 };
@@ -134,6 +153,7 @@ export default [
     ignores: ['**/node_modules/', '.git/', 'build/*', 'dist/*'],
   },
   eslint.configs.recommended,
+  ...tseslint.configs.recommended,
   commonConfig,
   typescriptConfig,
   simpleImportSortConfig,
