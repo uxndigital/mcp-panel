@@ -10,11 +10,11 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 9800,
+        PORT: 9810,
       },
       env_development: {
         NODE_ENV: 'development',
-        PORT: 9800,
+        PORT: 9810,
       },
       log_date_format: 'YYYY-MM-DD HH:mm Z',
       error_file: './logs/api-server-error.log',
@@ -33,12 +33,12 @@ module.exports = {
       max_memory_restart: '500M',
       env: {
         NODE_ENV: 'production',
-        PORT: 9801,
+        PORT: 9811,
         HOST: '127.0.0.1',
       },
       env_development: {
         NODE_ENV: 'development',
-        PORT: 9801,
+        PORT: 9811,
         HOST: '127.0.0.1',
       },
       log_date_format: 'YYYY-MM-DD HH:mm Z',
