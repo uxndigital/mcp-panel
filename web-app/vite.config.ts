@@ -24,6 +24,10 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    port: 9801,
+    host: '127.0.0.1',
+  },
   // 明确指定构建配置
   build: {
     outDir: 'dist',

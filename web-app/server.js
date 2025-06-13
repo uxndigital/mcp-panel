@@ -1,30 +1,46 @@
-import path from 'node:path';
-dotenv.config();
-import { fileURLToPath } from 'node:url';
-
 import dotenv from 'dotenv';
 import express from 'express';
-import fallback from 'express-history-api-fallback';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import packageJson from './package.json' with { type: 'json' };
 
-const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const __dirname = path.dirname(__filename); // get the name of the directory
+dotenv.config();
 
-const { HOST = '127.0.0.1', PORT = 3000 } = process.env;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const PORT = process.env.PORT || 9801;
+const HOST = '127.0.0.1';
+
+console.log('🚀 正在启动服务器...');
+console.log(`📂 工作目录: ${__dirname}`);
+console.log(`📂 静态文件目录: ${path.resolve(__dirname, 'dist')}`);
 
 const app = express();
-const root = path.resolve(__dirname, './dist');
+const root = path.resolve(__dirname, 'dist');
 
+// API 路由
 app.get('/getAppVersion', (req, res) => {
   const version = packageJson.version;
   res.json({ version });
 });
 
-app.use(express.static(root));
-// app.use(express.static(fonts));
-app.use(fallback('index.html', { root: root }));
+// 静态文件服务 - 提供 dist 目录下的所有文件
+app.use('/', express.static(root));
 
-app.listen(+PORT, HOST, () => {
-  console.log(`listening at http://${HOST}:${+PORT}`);
+// 所有其他路由都返回 dist/index.html
+app.use((req, res) => {
+  res.sendFile(path.join(root, 'index.html'));
+});
+
+const server = app.listen(PORT, HOST, () => {
+  console.log(`🚀 生产环境服务器运行在 http://${HOST}:${PORT}`);
+  console.log(`📂 静态文件目录: ${root}`);
+});
+
+// 添加错误处理
+server.on('error', (error) => {
+  console.error('❌ 服务器启动失败:', error);
+  process.exit(1);
 });
