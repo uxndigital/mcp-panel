@@ -5,7 +5,7 @@ import express from 'express';
 import { McpManager } from './services/mcp-manager.js';
 
 const app = express();
-const PORT = process.env.PORT || 9800;
+const PORT = Number(process.env.PORT) || 9800;
 
 // 中间件
 app.use(cors());
@@ -141,8 +141,8 @@ app.use('*', (req, res) => {
 async function startServer() {
   await initializeServer();
 
-  app.listen(PORT, () => {
-    console.log(`�� MCP API Server 已启动: http://localhost:${PORT}`);
+  app.listen(PORT, '127.0.0.1', () => {
+    console.log(`✅ MCP API Server 已启动: http://localhost:${PORT}`);
     console.log(`📋 端点列表: http://localhost:${PORT}/api/mcp/list`);
     console.log(`💚 健康检查: http://localhost:${PORT}/health`);
   });

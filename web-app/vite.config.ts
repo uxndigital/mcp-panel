@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react(), wyw()],
   server: {
     port: 9801,
-    host: true,
+    host: '127.0.0.1',
     proxy: {
       // 代理所有 /api 请求到 API 服务器
       '/api': {
