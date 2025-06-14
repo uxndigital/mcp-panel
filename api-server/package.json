@@ -5,9 +5,8 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch --ignore src/mcp src/index.ts",
+    "dev": "jiti src/index.ts",
     "start": "node dist/api-server/src/index.js",
-    "find-deadcode": "ts-prune",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -30,9 +29,8 @@
     "eslint": "^9.28.0",
     "express": "^5.1.0",
     "husky": "^9.1.7",
+    "jiti": "^2.4.2",
     "prettier": "^3.5.3",
-    "ts-prune": "^0.10.3",
-    "tsx": "^4.9.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.0"
   }

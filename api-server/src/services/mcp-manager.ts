@@ -22,7 +22,7 @@ export class McpManager {
   private baseDir: string;
 
   constructor() {
-    this.baseDir = path.join(process.cwd(), 'src', 'mcp');
+    this.baseDir = path.join(process.cwd(), 'repo-cache');
     // 如果目录不存在则创建
     fs.mkdir(this.baseDir, { recursive: true }).catch(() => {});
   }
