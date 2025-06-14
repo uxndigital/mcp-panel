@@ -1,0 +1,7 @@
+:root {
+  --header-height: 96px;
+
+  --max-content-width: 1440px;
+
+  @custom-media --small-viewport (max-width: 768px);
+}

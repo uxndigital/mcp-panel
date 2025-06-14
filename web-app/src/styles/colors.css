@@ -1,0 +1,20 @@
+:root {
+  /* Solid Colors */
+  --color-dark-gray-1: #252726;
+  --color-dark-gray-2: #242625;
+  --color-light-gray-1: #EDEDED;
+  --color-off-white: #F0EEEC;
+  --color-dark-gray-3: #242625;
+  --color-black: #2B2B2B;
+  --color-brown-gray: #615850;
+  --color-gray-blue: #545D5F;
+  --color-white: #FFFFFF;
+  
+  /* Border Colors */
+  --color-border-dark: #3D3D3D;
+  --color-border-black: #2B2B2B;
+  --color-border-light: #F0EEEC;
+  --color-border-gray-blue: #545D5F;
+  
+  /* Note: Image fills are not included as they require actual image assets */
+}

@@ -1,0 +1,253 @@
+/* Root variables for easy theming and maintainability */
+:root {
+  /*==============================================  AI CAN CHANGE BELOW*/
+  --font-base: 'Epilogue', 'EB Garamond', 'Outfit', sans-serif;
+  --font-sans: 'Epilogue', sans-serif;
+  --font-serif: 'EB Garamond', serif;
+  --font-mono: 'Outfit', monospace;
+
+  --base-font-weight: 400;
+  --base-font-size: 18px;
+  --base-fluid-font-size-max: 24px;
+  --font-scale-pc: 1.25;
+  --font-scale-mobile: 1.125;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+
+  --letter-spacing-tight: -3%;
+  --letter-spacing-normal: -2%;
+  --letter-spacing-wide: 2%;
+  /*==============================================  AI CAN NOT CHANGE BELOW*/
+  --font-size-pc-0: 1rem;
+  --font-size-pc-1: calc(var(--font-size-pc-0) * var(--font-scale-pc));
+  --font-size-pc-2: calc(var(--font-size-pc-0) * pow(var(--font-scale-pc), 2));
+  --font-size-pc-3: calc(var(--font-size-pc-0) * pow(var(--font-scale-pc), 3));
+  --font-size-pc-4: calc(var(--font-size-pc-0) * pow(var(--font-scale-pc), 4));
+  --font-size-pc-5: calc(var(--font-size-pc-0) * pow(var(--font-scale-pc), 5));
+  --font-size-pc--1: calc(var(--font-size-pc-0) / var(--font-scale-pc));
+  --font-size-pc--2: calc(var(--font-size-pc-0) / pow(var(--font-scale-pc), 2));
+  --font-size-pc--3: calc(var(--font-size-pc-0) / pow(var(--font-scale-pc), 3));
+
+  --font-size--3: var(--font-size-pc--3);
+  --font-size--2: var(--font-size-pc--2);
+  --font-size--1: var(--font-size-pc--1);
+  --font-size-0: var(--font-size-pc-0);
+  --font-size-1: var(--font-size-pc-1);
+  --font-size-2: var(--font-size-pc-2);
+  --font-size-3: var(--font-size-pc-3);
+  --font-size-4: var(--font-size-pc-4);
+  --font-size-5: var(--font-size-pc-5);
+
+  --font-size-mobile-0: 1rem;
+  --font-size-mobile-1: calc(var(--font-size-mobile-0) * var(--font-scale-mobile));
+  --font-size-mobile-2: calc(var(--font-size-mobile-0) * pow(var(--font-scale-mobile), 2));
+  --font-size-mobile-3: calc(var(--font-size-mobile-0) * pow(var(--font-scale-mobile), 3));
+  --font-size-mobile-4: calc(var(--font-size-mobile-0) * pow(var(--font-scale-mobile), 4));
+  --font-size-mobile-5: calc(var(--font-size-mobile-0) * pow(var(--font-scale-mobile), 5));
+  --font-size-mobile--1: calc(var(--font-size-mobile-0) / var(--font-scale-mobile));
+  --font-size-mobile--2: calc(var(--font-size-mobile-0) / pow(var(--font-scale-mobile), 2));
+  --font-size-mobile--3: calc(var(--font-size-mobile-0) / pow(var(--font-scale-mobile), 3));
+
+  @utopia typeScale({
+    minWidth: var(--pc-min-width),
+    maxWidth: var(--pc-max-width),
+    minFontSize: var(--base-font-size),
+    maxFontSize: var(--base-fluid-font-size-max),
+    minTypeScale: var(--font-scale-pc),
+    maxTypeScale: var(--font-scale-pc),
+    positiveSteps: 5,
+    negativeSteps: 0,
+    prefix: "font-size-pc-fluid",
+    relativeTo: "viewport-width" /* viewport-width | container */
+  });
+
+  @utopia typeScale({
+    minWidth: var(--pc-min-width),
+    maxWidth: var(--pc-max-width),
+    minFontSize: var(--base-font-size),
+    maxFontSize: var(--base-fluid-font-size-max),
+    minTypeScale: var(--font-scale-pc),
+    maxTypeScale: var(--font-scale-pc),
+    positiveSteps: 5,
+    negativeSteps: 0,
+    prefix: "font-size-fluid",
+    relativeTo: "viewport-width" /* viewport-width | container */
+  });
+
+  @utopia typeScale({
+    minWidth: var(--mobile-min-width),
+    maxWidth: var(--mobile-max-width),
+    minFontSize: var(--base-font-size),
+    maxFontSize: var(--base-fluid-font-size-max),
+    minTypeScale: var(--font-scale-mobile),
+    maxTypeScale: var(--font-scale-mobile),
+    positiveSteps: 5,
+    negativeSteps: 0,
+    prefix: "font-size-mobile-fluid",
+    relativeTo: "viewport-width" /* viewport-width | container */
+  });
+}
+
+html {
+  @media (--pc) {
+    font-size: var(--base-font-size);
+  }
+  @media (--mobile) {
+    font-size: var(--base-font-size);
+  }
+  font-family: var(--font-base);
+  line-height: 140%;
+  font-weight: var(--base-font-weight);
+}
+
+ul,
+li,
+a {
+  font-family: var(--font-base);
+  font-weight: var(--base-font-weight);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-base);
+  color: var(--header-color);
+  /* text-transform: uppercase; */
+  line-height: 1;
+  * {
+    line-height: inherit !important;
+  }
+}
+
+h1 {
+  font-weight: 500;
+  @media (--pc) {
+    font-size: var(--font-size-pc-5);
+    &.fluid {
+      font-size: var(--font-size-pc-fluid-5);
+    }
+  }
+  @media (--mobile) {
+    font-size: var(--font-size-mobile-5);
+    &.fluid {
+      font-size: var(--font-size-mobile-fluid-5);
+    }
+  }
+}
+
+h2 {
+  font-weight: 500;
+  @media (--pc) {
+    font-size: var(--font-size-pc-4);
+    &.fluid {
+      font-size: var(--font-size-pc-fluid-4);
+    }
+  }
+  @media (--mobile) {
+    font-size: var(--font-size-mobile-4);
+    &.fluid {
+      font-size: var(--font-size-mobile-fluid-4);
+    }
+  }
+}
+
+h3 {
+  font-weight: 500;
+  @media (--pc) {
+    font-size: var(--font-size-pc-3);
+    &.fluid {
+      font-size: var(--font-size-pc-fluid-3);
+    }
+  }
+  @media (--mobile) {
+    font-size: var(--font-size-mobile-3);
+    &.fluid {
+      font-size: var(--font-size-mobile-fluid-3);
+    }
+  }
+}
+
+h4 {
+  font-weight: 500;
+  @media (--pc) {
+    font-size: var(--font-size-pc-2);
+    &.fluid {
+      font-size: var(--font-size-pc-fluid-2);
+    }
+  }
+  @media (--mobile) {
+    font-size: var(--font-size-mobile-2);
+    &.fluid {
+      font-size: var(--font-size-mobile-fluid-2);
+    }
+  }
+}
+
+h5 {
+  font-weight: 500;
+  @media (--pc) {
+    font-size: var(--font-size-pc-1);
+    &.fluid {
+      font-size: var(--font-size-pc-fluid-1);
+    }
+  }
+  @media (--mobile) {
+    font-size: var(--font-size-mobile-1);
+    &.fluid {
+      font-size: var(--font-size-mobile-fluid-1);
+    }
+  }
+}
+
+h6 {
+  font-weight: 500;
+  @media (--pc) {
+    font-size: var(--font-size-pc-0);
+    &.fluid {
+      font-size: var(--font-size-pc-fluid-0);
+    }
+  }
+  @media (--mobile) {
+    font-size: var(--font-size-mobile-0);
+    &.fluid {
+      font-size: var(--font-size-mobile-fluid-0);
+    }
+  }
+}
+
+p {
+  white-space: pre-line;
+  color: var(--text-color);
+  font-weight: var(--base-font-weight);
+  & + & {
+    margin-top: var(--size-4);
+  }
+  @media (--pc) {
+    font-size: var(--font-size-pc-0);
+    &.fluid {
+      font-size: var(--font-size-pc-fluid-0);
+    }
+    &.sm {
+      font-size: var(--font-size-pc--1);
+      &.fluid {
+        font-size: var(--font-size-pc-fluid--1);
+      }
+    }
+  }
+  @media (--mobile) {
+    font-size: var(--font-size-mobile-0);
+    &.fluid {
+      font-size: var(--font-size-mobile-fluid-0);
+    }
+    &.sm {
+      font-size: var(--font-size-mobile--1);
+      &.fluid {
+        font-size: var(--font-size-mobile-fluid--1);
+      }
+    }
+  }
+}

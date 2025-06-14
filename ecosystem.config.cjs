@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'mcp-api-server',
+      name: 'mcp-panel-server',
       script: 'dist/api-server/src/index.js',
       cwd: './api-server',
       instances: 1,
@@ -23,7 +23,7 @@ module.exports = {
       time: true,
     },
     {
-      name: 'mcp-web-app',
+      name: 'mcp-panel-client',
       script: 'node',
       args: 'server.js',
       cwd: './web-app',

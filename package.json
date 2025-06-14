@@ -1,53 +1,8 @@
 {
-  "name": "mcp-panel-workspace",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@uxndigital/mcp-panel",
+  "version": "1.0.0",
   "type": "module",
-  "workspaces": [
-    "packages/*",
-    "api-server",
-    "web-app"
-  ],
-  "scripts": {
-    "dev": "pnpm run dev:all",
-    "dev:all": "concurrently \"pnpm run dev:api\" \"pnpm run dev:web\"",
-    "dev:api": "pnpm --filter @mcp-panel/api-server dev",
-    "dev:web": "pnpm --filter @mcp-panel/web-app dev",
-    "build": "pnpm run build:all",
-    "build:all": "pnpm -r build",
-    "start": "pnpm run start:pm2",
-    "start:all": "concurrently \"pnpm run start:api\" \"pnpm run start:web\"",
-    "start:api": "pnpm --filter @mcp-panel/api-server start",
-    "start:web": "pnpm --filter @mcp-panel/web-app preview",
-    "start:pm2": "pm2 start ecosystem.config.cjs",
-    "stop:pm2": "pm2 stop ecosystem.config.cjs",
-    "restart:pm2": "pm2 restart ecosystem.config.cjs",
-    "delete:pm2": "pm2 delete ecosystem.config.cjs",
-    "logs:pm2": "pm2 logs",
-    "monitor:pm2": "pm2 monit",
-    "lint": "pnpm -r lint",
-    "clean": "pnpm -r exec rm -rf dist node_modules && rm -rf node_modules",
-    "install:all": "pnpm install"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
-    "express": "^5.1.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.25.0",
-    "@types/express": "^5.0.2",
-    "@types/node": "^22.15.29",
-    "concurrently": "^8.2.2",
-    "eslint": "^9.25.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.4.1",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
-    "eslint-plugin-unused-imports": "^4.1.4",
-    "globals": "^16.0.0",
-    "jiti": "^2.4.2",
-    "prettier": "^3.5.3",
-    "typescript": "~5.8.3",
-    "typescript-eslint": "^8.30.1"
-  },
+  "scripts": {},
+  "devDependencies": {},
   "packageManager": "pnpm@9.15.9"
 }

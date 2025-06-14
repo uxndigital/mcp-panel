@@ -1,6 +1,6 @@
 import './App.css';
 
-import { Flex } from '@uxndigital/ui-essentials';
+import Flex from '@/components/baseComponents/Flex';
 import { useEffect, useState } from 'react';
 
 import Button from '@/components/ui/Button';
