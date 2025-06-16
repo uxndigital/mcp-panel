@@ -6,8 +6,9 @@
     "build": "concurrently \"cd api-server && pnpm build\" \"cd web-app && pnpm build\""
   },
   "devDependencies": {
-    "jiti": "^2.4.2",
-    "concurrently": "^8.2.2"
+    "@uxndigital/prettier-config": "~0.0.3",
+    "concurrently": "^8.2.2",
+    "jiti": "^2.4.2"
   },
   "packageManager": "pnpm@9.15.9"
 }

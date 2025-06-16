@@ -40,7 +40,7 @@ importers:
         specifier: 9.x.x
         version: link:../../../configs/eslint-config/react
       '@uxndigital/prettier-config':
-        specifier: ^0.0.2
+        specifier: ~0.0.3
         version: link:../../../configs/prettier-config
       '@uxndigital/tsconfig':
         specifier: 5.x.x
