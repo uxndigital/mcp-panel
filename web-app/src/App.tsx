@@ -1,12 +1,12 @@
-import './App.css';
-
-import Flex from '@/components/baseComponents/Flex';
 import { useEffect, useState } from 'react';
 
+import Flex from '@/components/baseComponents/Flex';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
 import { container } from './style';
+
+import './App.css';
 
 interface McpInfo {
   name: string;
