@@ -1,8 +1,16 @@
 {
-  "extends": "@uxndigital/tsconfig/server/node.json",
+  "extends": "@uxndigital/tsconfig/server/node",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "baseUrl": ".",
+    "noEmit": true,
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "repo-cache"]

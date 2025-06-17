@@ -37,7 +37,7 @@ app.use('/:mcpName/mcp', (req, res, next) => {
     const mcpServer = mcpManager.getMcpServer(endpoint);
 
     if (mcpServer) {
-      const serverInstance = new Server(mcpServer);
+      const serverInstance = new Server(mcpServer as any);
 
       if (req.method === 'POST') {
         serverInstance.handlePostRequest(req as any, res as any).catch(next);
