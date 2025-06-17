@@ -1,3 +1,3 @@
-export default {
-  extends: '@uxndigital/prettier-config',
-};
+import config from '@uxndigital/prettier-config';
+
+export default config;
