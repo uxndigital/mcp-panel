@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "concurrently \"cd api-server && pnpm build\" \"cd web-app && pnpm build\""
+    "build": "concurrently \"cd api-server && pnpm build\" \"cd web-app && pnpm build\"",
+    "start": "pm2 start ecosystem.config.cjs"
   },
   "devDependencies": {
     "@uxndigital/eslint-config-base": "^9.0.0",
