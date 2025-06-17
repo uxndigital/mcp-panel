@@ -9,7 +9,7 @@ importers:
   .:
     devDependencies:
       '@uxndigital/eslint-config-base':
-        specifier: 9.x.x
+        specifier: ^9.0.0
         version: link:../../configs/eslint-config-base
       '@uxndigital/prettier-config':
         specifier: ~0.0.3

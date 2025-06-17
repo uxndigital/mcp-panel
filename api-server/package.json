@@ -24,7 +24,7 @@
     "@uxndigital/eslint-config-base": "9.x.x",
     "@uxndigital/eslint-config-react": "9.x.x",
     "@uxndigital/prettier-config": "~0.0.3",
-    "@uxndigital/tsconfig": "5.x.x",
+    "@uxndigital/tsconfig": "^5.0.0",
     "dotenv": "^16.5.0",
     "eslint": "^9.28.0",
     "express": "^5.1.0",
