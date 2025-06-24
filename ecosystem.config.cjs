@@ -11,10 +11,12 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 9810,
+        SERVER_DOMAIN: 'http://47.103.70.212:9810',
       },
       env_development: {
         NODE_ENV: 'development',
         PORT: 9810,
+        SERVER_DOMAIN: 'http://47.103.70.212:9810',
       },
       log_date_format: 'YYYY-MM-DD HH:mm Z',
       error_file: './logs/api-server-error.log',

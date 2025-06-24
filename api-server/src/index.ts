@@ -2,11 +2,16 @@ import { Server } from '@uxndigital/mcp-server';
 import cors from 'cors';
 import type { RequestHandler } from 'express';
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { McpManager } from './services/mcp-manager.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 9800;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 中间件
 app.use(cors());
@@ -25,6 +30,16 @@ async function initializeServer() {
     process.exit(1);
   }
 }
+
+// 在开发环境中：__dirname 是 src/
+// 在构建后：__dirname 是 dist/api-server/src/
+// 需要找到与 dist 同级的 cache 文件夹
+const cache = path.resolve(__dirname, '..', '..', '..', 'cache');
+
+console.log('📁 Cache 目录路径:', cache);
+console.log('📁 Cache 目录是否存在:', fs.existsSync(cache));
+
+app.use('/cache', express.static(cache));
 
 // MCP 动态路由处理 - 使用具体的路由模式
 app.use('/:mcpName/mcp', (req, res, next) => {
