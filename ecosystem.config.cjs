@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'mcp-panel-server',
-      script: 'dist/api-server/index.js',
+      script: 'dist/api-server/src/index.js',
       cwd: './api-server',
       instances: 1,
       autorestart: true,
