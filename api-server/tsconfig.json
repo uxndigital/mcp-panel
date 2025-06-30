@@ -4,13 +4,14 @@
     "rootDir": "src",
     "outDir": "dist",
     "baseUrl": ".",
-    "noEmit": true,
+    // "noEmit": true,
     "paths": {
       "@/*": ["src/*"]
     },
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "allowImportingTsExtensions": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "repo-cache"]
