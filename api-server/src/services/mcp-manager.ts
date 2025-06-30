@@ -118,14 +118,29 @@ export class McpManager {
   }
 
   async installMcp(githubUrl: string): Promise<string> {
+    // 备份目录路径
+    let backupDir: string | null = null;
+    let installSuccess = false;
+    // 从 GitHub URL 提取仓库名称
+    const repoName = githubUrl.split('/').pop()?.replace('.git', '') || '';
+    const mcpDir = path.join(this.baseDir, repoName);
+
+    console.log(`🔄 开始安装 MCP: ${repoName}`);
+
     try {
-      // 从 GitHub URL 提取仓库名称
-      const repoName = githubUrl.split('/').pop()?.replace('.git', '') || '';
-      const mcpDir = path.join(this.baseDir, repoName);
+      // 1. 检查目录是否已存在，存在则先备份
+      try {
+        await fs.access(mcpDir);
+        // 目录存在，重命名为备份
+        const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '');
+        backupDir = `${mcpDir}.bak-${timestamp}`;
+        await fs.rename(mcpDir, backupDir);
+        console.log(`📦 目录已存在，已备份为: ${backupDir}`);
+      } catch {
+        // 目录不存在，无需备份
+      }
 
-      console.log(`🔄 开始安装 MCP: ${repoName}`);
-
-      // 克隆仓库
+      // 2. 克隆仓库
       await execAsync(`git clone ${githubUrl.replace("https://github.com/", "git@github.com:").replace(/([^\.])$/, "$1.git")} ${mcpDir}`);
 
       // 获取 Git 信息
@@ -167,11 +182,39 @@ export class McpManager {
       this.mcpEndpoints.set(endpoint, mcpDir);
       this.mcpMetadata.set(endpoint, metadata);
 
+      installSuccess = true;
       console.log(`✅ 成功安装 MCP: ${endpoint}`);
+      // 安装成功后重启服务
+      console.log('🚀 安装完成，服务即将重启...');
+      setTimeout(() => process.exit(0), 100);
       return endpoint;
     } catch (error) {
       console.error('Error installing MCP:', error);
+      // 如果有备份目录，删除新目录并还原备份
+      if (backupDir) {
+        try {
+          // 删除新目录（如果存在）
+          try {
+            await fs.rm(mcpDir, { recursive: true, force: true });
+          } catch {}
+          // 还原备份
+          await fs.rename(backupDir, mcpDir);
+          console.log(`♻️ 安装失败，已还原原目录: ${mcpDir}`);
+        } catch (restoreErr) {
+          console.error('还原原目录失败:', restoreErr);
+        }
+      }
       throw error;
+    } finally {
+      // 安装成功后删除备份
+      if (installSuccess && backupDir) {
+        try {
+          await fs.rm(backupDir, { recursive: true, force: true });
+          console.log(`🗑️ 已删除备份目录: ${backupDir}`);
+        } catch (delBakErr) {
+          console.warn('删除备份目录失败:', delBakErr);
+        }
+      }
     }
   }
 
@@ -312,6 +355,9 @@ export class McpManager {
       }
 
       console.log(`✅ 成功卸载 MCP: ${endpoint}`);
+      // 更新成功后重启服务
+      console.log('🚀 更新完成，服务即将重启...');
+      setTimeout(() => process.exit(0), 100);
     } catch (error) {
       console.error(`❌ 卸载 MCP 失败: ${endpoint}`, error);
 
@@ -391,11 +437,6 @@ export class McpManager {
       // 重新加载模块 - 需要清除模块缓存
       const modulePath = path.join(mcpDir, 'dist/src/index.js');
 
-      // 删除模块缓存（Node.js 特定）
-      if (require.cache[modulePath]) {
-        delete require.cache[modulePath];
-      }
-
       // 重新动态导入 MCP 服务器
       const mcpModule = await import(`${modulePath}?t=${Date.now()}`); // 添加时间戳避免缓存
       const server = mcpModule.default;
@@ -420,6 +461,9 @@ export class McpManager {
       console.log(
         `✅ 成功更新 MCP: ${endpoint} (${oldCommit.substring(0, 8)} → ${newCommit.substring(0, 8)})`
       );
+      // 更新成功后重启服务
+      console.log('🚀 更新完成，服务即将重启...');
+      setTimeout(() => process.exit(0), 100);
       return updatedMetadata;
     } catch (error) {
       console.error(`❌ 更新 MCP 失败: ${endpoint}`, error);
