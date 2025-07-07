@@ -1,0 +1,52 @@
+@import './reset.css';
+@import './variables.css';
+@import './colors.css';
+@import './layout.css';
+@import './typography.css';
+
+html {
+}
+
+body {
+  background: var(--background-color);
+  color: var(--text-color);
+  letter-spacing: -1px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--header-color);
+  letter-spacing: -2px;
+}
+
+/* 下面的样式已经在typography.css中定义，可以移除 */
+/* h1 {
+  font-size: var(--font-size-fluid-6);
+  font-weight: 500;
+}
+
+h2 {
+  font-size: var(--font-size-fluid-5);
+  font-weight: 500;
+}
+
+h3 {
+  font-size: var(--font-size-fluid-4);
+  font-weight: 500;
+}
+
+h4 {
+  font-size: var(--font-size-fluid-3);
+}
+
+h5 {
+  font-size: var(--font-size-fluid-2);
+}
+
+h5 {
+  font-size: var(--font-size-fluid-1);
+} */

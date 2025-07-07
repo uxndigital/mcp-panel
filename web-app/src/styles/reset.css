@@ -1,0 +1,195 @@
+/* Enhanced Modern Normalize.css */
+
+/* Apply a natural box layout model to all elements */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+menu,
+figure,
+blockquote,
+dl,
+dd,
+ul,
+ol,
+pre,
+table,
+fieldset,
+hr {
+  margin: 0;
+}
+
+/* Set core body defaults */
+body {
+  text-rendering: optimizeSpeed;
+}
+
+/* Typography adjustments for improved readability */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.1;
+}
+
+/* Link styles for improved accessibility */
+a {
+  background-color: transparent;
+  text-decoration: none;
+}
+
+/* Optimize form elements */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  margin: 0;
+}
+
+/* Adjust button and field styles */
+button,
+input {
+  overflow: visible;
+}
+button,
+select {
+  text-transform: none;
+}
+
+/* Remove the inner border and padding in Firefox */
+::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+/* Restore the focus styles unset by the previous rule */
+:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+/* Improve consistency of default fonts in all browsers */
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-base);
+}
+
+/* Manually correct the text wrapping in Edge and IE */
+textarea {
+  overflow-wrap: break-word;
+}
+
+/* Responsive images and media */
+img,
+picture,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Improve readability of pre-formatted text in all browsers */
+pre {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+
+/* Make SVGs focusable in IE 11 */
+svg:not([fill]) {
+  fill: currentColor;
+}
+
+/* Improve form fields appearance */
+fieldset {
+  min-width: 0; /* Reset min-width */
+  padding: 0; /* Reset padding */
+  margin: 0; /* Reset margin */
+  border: 0; /* Remove border */
+}
+
+/* Remove default vertical scrollbar in IE 10+ */
+textarea {
+  overflow: auto;
+}
+
+/* Accessibility: Ensure that active, focusable elements are visually distinct */
+:focus-visible {
+  outline: 3px solid Highlight;
+}
+
+/* Text overflow */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+figure,
+figcaption,
+blockquote,
+dl,
+dd {
+  overflow-wrap: break-word;
+}
+
+button {
+  border: none;
+  margin: 0;
+  padding: 0;
+  width: auto;
+  overflow: visible;
+
+  background: transparent;
+
+  /* inherit font & color from ancestor */
+  color: inherit;
+  font: inherit;
+
+  /* Normalize `line-height`. Cannot be changed from `normal` in Firefox 4+. */
+  line-height: normal;
+
+  /* Corrects font smoothing for webkit */
+  -webkit-font-smoothing: inherit;
+  -moz-osx-font-smoothing: inherit;
+
+  /* Corrects inability to style clickable `input` types in iOS */
+  -webkit-appearance: none;
+}
+
+menu,
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+  list-style-image: none;
+}

@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+tsconfig.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
@@ -24,5 +25,7 @@ dist-ssr
 *.sw?
 
 # MCP installations and packages - excluded from version control
+repo-cache/
 api-server/src/mcp/
+api-server/cache
 packages/

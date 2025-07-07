@@ -1,8 +1,3 @@
-export default {
-  semi: true,
-  trailingComma: 'es5',
-  singleQuote: true,
-  printWidth: 80,
-  tabWidth: 2,
-  useTabs: false,
-};
+import config from '@uxndigital/prettier-config';
+
+export default config;

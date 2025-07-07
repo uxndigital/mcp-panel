@@ -1,11 +1,25 @@
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 import wyw from '@wyw-in-js/vite';
 import path from 'path';
 import { defineConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), wyw()],
+  plugins: [
+    react(),
+    // wyw({ exclude: /\.(ts|tsx)$/ })
+    wyw({
+      include: ['**/*.{js,jsx,ts,tsx}'],
+      exclude: ['**/node_modules/**'],
+      babelOptions: {
+        presets: ['@babel/preset-typescript'],
+      },
+    }),
+    tsconfigPaths({
+      projects: ['./tsconfig.json'],
+    }),
+  ],
   server: {
     port: 9801,
     host: '127.0.0.1',

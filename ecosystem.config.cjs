@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: 'mcp-api-server',
-      script: 'dist/api-server/src/index.js',
+      name: 'mcp-panel-server',
+      script: 'dist/index.js',
       cwd: './api-server',
       instances: 1,
       autorestart: true,
@@ -11,10 +11,12 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 9810,
+        SERVER_DOMAIN: 'http://47.103.70.212:9800',
       },
       env_development: {
         NODE_ENV: 'development',
         PORT: 9810,
+        SERVER_DOMAIN: 'http://47.103.70.212:9800',
       },
       log_date_format: 'YYYY-MM-DD HH:mm Z',
       error_file: './logs/api-server-error.log',
@@ -23,7 +25,7 @@ module.exports = {
       time: true,
     },
     {
-      name: 'mcp-web-app',
+      name: 'mcp-panel-client',
       script: 'node',
       args: 'server.js',
       cwd: './web-app',

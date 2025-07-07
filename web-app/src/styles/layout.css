@@ -1,0 +1,134 @@
+:root {
+  /* =============== AI CAN CHANGE BELOW =============== */
+  --mobile-min-width: 320px;
+  --mobile-max-width: 768px;
+  --pc-min-width: 768px;
+  --pc-max-width: 1600px;
+
+  --spacing-scale-pc: 1.618;
+  --spacing-scale-mobile: 1.25;
+
+  --base-spacing: 16px;
+  --base-fluid-spacing-max: 20px;
+  --base-mobile-spacing: 4px;
+  --base-mobile-fluid-spacing-max: 8px;
+
+  @custom-media --pc (min-width: 768px);
+  @custom-media --mobile (max-width: 768px);
+  /* =============== AI CAN NOT CHANGE BELOW =============== */
+
+  --spacing-step--3: 0.25;
+  --spacing-step--2: 0.5;
+  --spacing-step--1: 0.75;
+  --spacing-step-0: 1;
+  --spacing-step-1: 1.5;
+  --spacing-step-2: 2;
+  --spacing-step-3: 3;
+  --spacing-step-4: 4;
+  --spacing-step-5: 5;
+  --spacing-step-6: 6;
+  --spacing-step-7: 8;
+  --spacing-step-8: 12;
+  --spacing-step-9: 16;
+  --spacing-step-10: 24;
+  --spacing-step-11: 32;
+  --spacing-step-12: 48;
+
+  /* mobile fluid spacing */
+  @utopia spaceScale({
+    minWidth: 320,
+    maxWidth: 768,
+    minSize: 4,
+    maxSize: 8,
+    positiveSteps: [1, 1.5, 2, 3, 4, 5, 6, 8, 12, 16, 24, 32, 48],
+    negativeSteps: [0.75, 0.5, 0.25],
+    customSizes: [],
+    relativeTo: "viewport",
+    prefix: "spacing-mobile-fluid",
+    usePx: true
+  });
+
+  /* pc fluid spacing */
+  @utopia spaceScale({
+    minWidth: 768,
+    maxWidth: 1600,
+    minSize: 16,
+    maxSize: 20,
+    positiveSteps: [1, 1.5, 2, 3, 4, 5, 6, 8, 12, 16, 24, 32, 48],
+    negativeSteps: [0.75, 0.5, 0.25],
+    customSizes: [],
+    relativeTo: 'viewport',
+    prefix: 'spacing-pc-fluid',
+    usePx: true
+  });
+
+  /* mobile fluid sizes */
+  --size-mobile-fluid--2: var(--space-mobile-fluid-3xs);
+  --size-mobile-fluid--1: var(--space-mobile-fluid-xs);
+  --size-mobile-fluid-0: var(--spacing-mobile-fluid-s);
+  --size-mobile-fluid-1: var(--spacing-mobile-fluid-m);
+  --size-mobile-fluid-2: var(--spacing-mobile-fluid-l);
+  --size-mobile-fluid-3: var(--spacing-mobile-fluid-xl);
+  --size-mobile-fluid-4: var(--spacing-mobile-fluid-2xl);
+  --size-mobile-fluid-5: var(--spacing-mobile-fluid-3xl);
+  --size-mobile-fluid-6: var(--spacing-mobile-fluid-4xl);
+  --size-mobile-fluid-7: var(--spacing-mobile-fluid-5xl);
+  --size-mobile-fluid-8: var(--spacing-mobile-fluid-6xl);
+  --size-mobile-fluid-9: var(--spacing-mobile-fluid-7xl);
+  --size-mobile-fluid-10: var(--spacing-mobile-fluid-8xl);
+  --size-mobile-fluid-11: var(--spacing-mobile-fluid-9xl);
+  --size-mobile-fluid-12: var(--spacing-mobile-fluid-10xl);
+
+  /* mobile fixed sizes */
+  --size-mobile--3: calc(var(--base-mobile-spacing) * var(--spacing-step--3));
+  --size-mobile--2: calc(var(--base-mobile-spacing) * var(--spacing-step--2));
+  --size-mobile--1: calc(var(--base-mobile-spacing) * var(--spacing-step--1));
+  --size-mobile-0: calc(var(--base-mobile-spacing) * var(--spacing-step-0));
+  --size-mobile-1: calc(var(--base-mobile-spacing) * var(--spacing-step-1));
+  --size-mobile-2: calc(var(--base-mobile-spacing) * var(--spacing-step-2));
+  --size-mobile-3: calc(var(--base-mobile-spacing) * var(--spacing-step-3));
+  --size-mobile-4: calc(var(--base-mobile-spacing) * var(--spacing-step-4));
+  --size-mobile-5: calc(var(--base-mobile-spacing) * var(--spacing-step-5));
+  --size-mobile-6: calc(var(--base-mobile-spacing) * var(--spacing-step-6));
+  --size-mobile-7: calc(var(--base-mobile-spacing) * var(--spacing-step-7));
+  --size-mobile-8: calc(var(--base-mobile-spacing) * var(--spacing-step-8));
+  --size-mobile-9: calc(var(--base-mobile-spacing) * var(--spacing-step-9));
+  --size-mobile-10: calc(var(--base-mobile-spacing) * var(--spacing-step-10));
+  --size-mobile-11: calc(var(--base-mobile-spacing) * var(--spacing-step-11));
+  --size-mobile-12: calc(var(--base-mobile-spacing) * var(--spacing-step-12));
+
+  /* pc fluid sizes */
+  --size-pc-fluid--2: var(--space-pc-fluid-3xs);
+  --size-pc-fluid--1: var(--space-pc-fluid-xs);
+  --size-pc-fluid-0: var(--spacing-pc-fluid-s);
+  --size-pc-fluid-1: var(--spacing-pc-fluid-m);
+  --size-pc-fluid-2: var(--spacing-pc-fluid-l);
+  --size-pc-fluid-3: var(--spacing-pc-fluid-xl);
+  --size-pc-fluid-4: var(--spacing-pc-fluid-2xl);
+  --size-pc-fluid-5: var(--spacing-pc-fluid-3xl);
+  --size-pc-fluid-6: var(--spacing-pc-fluid-4xl);
+  --size-pc-fluid-7: var(--spacing-pc-fluid-5xl);
+  --size-pc-fluid-8: var(--spacing-pc-fluid-6xl);
+  --size-pc-fluid-9: var(--spacing-pc-fluid-7xl);
+  --size-pc-fluid-10: var(--spacing-pc-fluid-8xl);
+  --size-pc-fluid-11: var(--spacing-pc-fluid-9xl);
+  --size-pc-fluid-12: var(--spacing-pc-fluid-10xl);
+
+  /* pc fixed sizes */
+  --size-pc--3: calc(var(--base-spacing) * var(--spacing-step--3));
+  --size-pc--2: calc(var(--base-spacing) * var(--spacing-step--2));
+  --size-pc--1: calc(var(--base-spacing) * var(--spacing-step--1));
+  --size-pc-0: calc(var(--base-spacing) * var(--spacing-step-0));
+  --size-pc-1: calc(var(--base-spacing) * var(--spacing-step-1));
+  --size-pc-2: calc(var(--base-spacing) * var(--spacing-step-2));
+  --size-pc-3: calc(var(--base-spacing) * var(--spacing-step-3));
+  --size-pc-4: calc(var(--base-spacing) * var(--spacing-step-4));
+  --size-pc-5: calc(var(--base-spacing) * var(--spacing-step-5));
+  --size-pc-6: calc(var(--base-spacing) * var(--spacing-step-6));
+  --size-pc-7: calc(var(--base-spacing) * var(--spacing-step-7));
+  --size-pc-8: calc(var(--base-spacing) * var(--spacing-step-8));
+  --size-pc-9: calc(var(--base-spacing) * var(--spacing-step-9));
+  --size-pc-10: calc(var(--base-spacing) * var(--spacing-step-10));
+  --size-pc-11: calc(var(--base-spacing) * var(--spacing-step-11));
+  --size-pc-12: calc(var(--base-spacing) * var(--spacing-step-12));
+} 

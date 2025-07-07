@@ -1,29 +1,18 @@
 {
+  "extends": "@uxndigital/tsconfig/server/node",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "allowJs": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false,
-    "declaration": true,
+    "rootDir": "src",
     "outDir": "dist",
-    "rootDir": "..",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "baseUrl": ".",
+    // "noEmit": true,
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "allowImportingTsExtensions": false
   },
-  "include": [
-    "src/**/*",
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "src/mcp"
-  ]
-} 
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "repo-cache"]
+}

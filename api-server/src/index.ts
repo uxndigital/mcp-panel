@@ -1,11 +1,17 @@
 import { Server } from '@uxndigital/mcp-server';
 import cors from 'cors';
+import type { RequestHandler } from 'express';
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { McpManager } from './services/mcp-manager.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 9800;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 中间件
 app.use(cors());
@@ -25,6 +31,16 @@ async function initializeServer() {
   }
 }
 
+// 在开发环境中：__dirname 是 src/
+// 在构建后：__dirname 是 dist/api-server/src/
+// 需要找到与 dist 同级的 cache 文件夹
+const cache = path.resolve(__dirname, '..', '..', '..', 'cache');
+
+console.log('📁 Cache 目录路径:', cache);
+console.log('📁 Cache 目录是否存在:', fs.existsSync(cache));
+
+app.use('/cache', express.static(cache));
+
 // MCP 动态路由处理 - 使用具体的路由模式
 app.use('/:mcpName/mcp', (req, res, next) => {
   const mcpName = req.params.mcpName;
@@ -36,7 +52,7 @@ app.use('/:mcpName/mcp', (req, res, next) => {
     const mcpServer = mcpManager.getMcpServer(endpoint);
 
     if (mcpServer) {
-      const serverInstance = new Server(mcpServer);
+      const serverInstance = new Server(mcpServer as any);
 
       if (req.method === 'POST') {
         serverInstance.handlePostRequest(req as any, res as any).catch(next);
@@ -52,7 +68,7 @@ app.use('/:mcpName/mcp', (req, res, next) => {
 });
 
 // MCP 管理 API
-app.post('/api/mcp/install', async (req, res: any, next) => {
+app.post('/api/mcp/install', (async (req, res, next) => {
   try {
     const { githubUrl } = req.body;
     if (!githubUrl) {
@@ -65,18 +81,20 @@ app.post('/api/mcp/install', async (req, res: any, next) => {
     res.json({ endpoint });
   } catch (error) {
     next(error);
+  } finally {
+    return;
   }
-});
+}) as RequestHandler);
 
 // 卸载 MCP - 使用具体的DELETE路由
-app.delete('/api/mcp/uninstall/:mcpName', (req, res, next) => {
+app.delete('/api/mcp/uninstall/:mcpName', async (req, res, next) => {
   const mcpName = req.params.mcpName;
   console.log(mcpName, 'mcpName');
 
   const endpoint = `/${mcpName}/mcp`;
   console.log(`🗑️ 卸载 MCP: ${endpoint}`);
 
-  mcpManager
+  await mcpManager
     .uninstallMcp(endpoint)
     .then(() => res.json({ success: true }))
     .catch(next);
@@ -99,7 +117,7 @@ app.put('/api/mcp/update/:mcpName', (req, res, next) => {
 });
 
 // 获取所有 MCP 端点列表
-app.get('/api/mcp/list', (req, res) => {
+app.get('/api/mcp/list', (_req, res) => {
   const mcpInfo = mcpManager.getAllMcpInfo();
 
   console.log(`📋 获取 MCP 列表: ${mcpInfo.length} 个 MCP`);
@@ -108,7 +126,7 @@ app.get('/api/mcp/list', (req, res) => {
 });
 
 // 健康检查端点
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -116,14 +134,14 @@ app.get('/health', (req, res) => {
 app.use(
   (
     error: Error,
-    req: express.Request,
+    _req: express.Request,
     res: express.Response
     // _next: express.NextFunction
   ) => {
     console.error('❌ MCP API Error:', error);
     res.status(500).json({
       error: error.message || 'Internal server error',
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
   }
 );
@@ -133,7 +151,7 @@ app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
     path: req.originalUrl,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString()
   });
 });
 

@@ -1,6 +1,4 @@
-@import '@uxndigital/ui-essentials/styles/reset.css';
-@import '@uxndigital/ui-essentials/styles/global.css';
-@import '@uxndigital/ui-essentials/assets/style.css';
+@import './styles/globals.css';
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;

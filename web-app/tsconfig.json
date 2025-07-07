@@ -1,11 +1,11 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
+  "extends": "@uxndigital/tsconfig/web/app.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
     }
-  ]
-} 
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

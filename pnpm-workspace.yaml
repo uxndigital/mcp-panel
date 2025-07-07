@@ -1,9 +1,0 @@
-packages:
-  # API服务器项目（根目录下）
-  - 'api-server'
-  # Web应用项目（根目录下）
-  - 'web-app'
-  # 排除MCP目录，让它们独立管理依赖
-  - '!api-server/src/mcp/*'
-  # 根目录也是一个包
-  - '.' 

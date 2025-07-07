@@ -27,6 +27,7 @@ app.get('/getAppVersion', (req, res) => {
 });
 
 // 静态文件服务 - 提供 dist 目录下的所有文件
+// app.use('/', express.static(root));
 app.use('/', express.static(root));
 
 // 所有其他路由都返回 dist/index.html
