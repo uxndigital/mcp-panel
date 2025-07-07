@@ -125,40 +125,38 @@ export class McpManager {
     const repoName = githubUrl.split('/').pop()?.replace('.git', '') || '';
     const mcpDir = path.join(this.baseDir, repoName);
 
+    // 生成唯一的临时目录
+    const tmpDir = path.join(this.baseDir, `.tmp-${repoName}-${Date.now()}`);
+
     console.log(`🔄 开始安装 MCP: ${repoName}`);
 
     try {
-      // 1. 检查目录是否已存在，存在则先备份
-      try {
-        await fs.access(mcpDir);
-        // 目录存在，重命名为备份
-        const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '');
-        backupDir = `${mcpDir}.bak-${timestamp}`;
-        await fs.rename(mcpDir, backupDir);
-        console.log(`📦 目录已存在，已备份为: ${backupDir}`);
-      } catch {
-        // 目录不存在，无需备份
-      }
+      // 2. 克隆仓库到临时目录
+      await execAsync(`git clone ${githubUrl.replace("https://github.com/", "git@github.com:").replace(/([^\.])$/, "$1.git")} ${tmpDir}`);
 
-      // 2. 克隆仓库
-      await execAsync(`git clone ${githubUrl.replace("https://github.com/", "git@github.com:").replace(/([^\.])$/, "$1.git")} ${mcpDir}`);
-
-      // 获取 Git 信息
-      const gitInfo = await this.getGitInfo(mcpDir);
+      // 获取 Git 信息（临时目录）
+      const gitInfo = await this.getGitInfo(tmpDir);
       console.log(
         `📊 Git 信息: ${gitInfo.commit.substring(0, 8)} ${gitInfo.version || 'no version'}`
       );
 
-      // 使用 --ignore-workspace 标志独立安装依赖
+      // 3. 在临时目录安装依赖并构建
       await execAsync(
-        `cd ${mcpDir} && pnpm install --ignore-workspace && pnpm run build`
+        `cd ${tmpDir} && pnpm install --ignore-workspace && pnpm run build`
       );
       console.log(`📦 已安装并构建 MCP: ${repoName}`);
 
-      // 清理不需要的文件
+      // 4. 清理不需要的文件
       await execAsync(
-        `rm -rf ${mcpDir}/src ${mcpDir}/server ${mcpDir}/.github`
+        `rm -rf ${tmpDir}/src ${tmpDir}/server ${tmpDir}/.github`
       );
+
+      // 5. 构建成功后移动到目标目录
+      // 先删除目标目录（如果存在，理论上已备份）
+      try {
+        await fs.rm(mcpDir, { recursive: true, force: true });
+      } catch {}
+      await fs.rename(tmpDir, mcpDir);
 
       // 动态导入 MCP 服务器
       const mcpModule = await import(path.join(mcpDir, 'dist/src/index.js'));
@@ -215,6 +213,10 @@ export class McpManager {
           console.warn('删除备份目录失败:', delBakErr);
         }
       }
+      // 无论成功失败都清理临时目录
+      try {
+        await fs.rm(tmpDir, { recursive: true, force: true });
+      } catch {}
     }
   }
 

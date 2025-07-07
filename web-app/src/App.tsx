@@ -21,6 +21,24 @@ interface McpListResponse {
   mcps: McpInfo[];
 }
 
+const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN || '';
+
+console.log(SERVER_DOMAIN, 'SERVER_DOMAIN');
+
+function getErrorMessage(error: any): void | string {
+  // if (!error) return '未知错误';  
+  // if (typeof error === 'string') return error;
+  // if (error.message) return error.message;
+  // if (error.error) return error.error;
+  try {
+    console.log(error);
+    return '安装失败'
+    // return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 function App() {
   const [mcps, setMcps] = useState<McpInfo[]>([]);
   const [githubUrl, setGithubUrl] = useState('');
@@ -30,7 +48,7 @@ function App() {
   // 获取 MCP 列表
   const fetchMcps = async () => {
     try {
-      const response = await fetch('/api/mcp/list');
+      const response = await fetch(`${SERVER_DOMAIN}/api/mcp/list`);
       const data: McpListResponse = await response.json();
       setMcps(data.mcps);
     } catch (error) {
@@ -44,7 +62,7 @@ function App() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/mcp/install', {
+      const response = await fetch(`${SERVER_DOMAIN}/api/mcp/install`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ githubUrl }),
@@ -58,11 +76,11 @@ function App() {
       } else {
         const error = await response.json();
         console.error('安装失败:', error.error);
-        alert(`安装失败: ${error.error}`);
+        alert(`安装失败: ${getErrorMessage(error)}`);
       }
     } catch (error) {
       console.error('安装失败:', error);
-      alert(`安装失败: ${error}`);
+      alert(`安装失败: ${getErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -75,7 +93,7 @@ function App() {
 
     try {
       const encodedMcpName = encodeURIComponent(mcpName);
-      const response = await fetch(`/api/mcp/update/${encodedMcpName}`, {
+      const response = await fetch(`${SERVER_DOMAIN}/api/mcp/update/${encodedMcpName}`, {
         method: 'PUT',
       });
 
@@ -87,11 +105,11 @@ function App() {
       } else {
         const error = await response.json();
         console.error('更新失败:', error.error);
-        alert(`更新失败: ${error.error}`);
+        alert(`更新失败: ${getErrorMessage(error)}`);
       }
     } catch (error) {
       console.error('更新失败:', error);
-      alert(`更新失败: ${error}`);
+      alert(`更新失败: ${getErrorMessage(error)}`);
     } finally {
       setUpdatingMcps((prev) => {
         const newSet = new Set(prev);
@@ -109,7 +127,7 @@ function App() {
 
     try {
       const encodedMcpName = encodeURIComponent(mcpInfo.name);
-      const response = await fetch(`/api/mcp/uninstall/${encodedMcpName}`, {
+      const response = await fetch(`${SERVER_DOMAIN}/api/mcp/uninstall/${encodedMcpName}`, {
         method: 'DELETE',
       });
 
@@ -119,11 +137,11 @@ function App() {
       } else {
         const error = await response.json();
         console.error('卸载失败:', error.error);
-        alert(`卸载失败: ${error.error}`);
+        alert(`卸载失败: ${getErrorMessage(error)}`);
       }
     } catch (error) {
       console.error('卸载失败:', error);
-      alert(`卸载失败: ${error}`);
+      alert(`卸载失败: ${getErrorMessage(error)}`);
     }
   };
 
@@ -185,7 +203,7 @@ function App() {
             <div className="mcp-list-container">
               {mcps.map((mcp) => (
                 <div key={mcp.name}>
-                  <Flex justify="space-between" align="flex-start">
+                  <Flex justify="space-between" align="flex-start" style={{padding: '14px 0'}}>
                     <div style={{ flex: 1 }}>
                       <h3 className="mcp-list-item-name">
                         {mcp.name}
