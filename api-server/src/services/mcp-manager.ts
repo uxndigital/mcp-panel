@@ -74,7 +74,7 @@ export class McpManager {
               version: gitInfo.version,
               commit: gitInfo.commit,
               installDate: 'unknown', // 已存在的 MCP 无法确定安装时间
-              directory: mcpDir,
+              directory: mcpDir
             };
             this.mcpMetadata.set(endpoint, metadata);
           } catch (error) {
@@ -86,7 +86,7 @@ export class McpManager {
               version: undefined,
               commit: 'unknown',
               installDate: 'unknown',
-              directory: mcpDir,
+              directory: mcpDir
             };
             this.mcpMetadata.set(endpoint, metadata);
           }
@@ -132,7 +132,9 @@ export class McpManager {
 
     try {
       // 2. 克隆仓库到临时目录
-      await execAsync(`git clone ${githubUrl.replace("https://github.com/", "git@github.com:").replace(/([^\.])$/, "$1.git")} ${tmpDir}`);
+      await execAsync(
+        `git clone ${githubUrl.replace('https://github.com/', 'git@github.com:').replace(/([^\.])$/, '$1.git')} ${tmpDir}`
+      );
 
       // 获取 Git 信息（临时目录）
       const gitInfo = await this.getGitInfo(tmpDir);
@@ -172,7 +174,7 @@ export class McpManager {
         version: gitInfo.version,
         commit: gitInfo.commit,
         installDate: new Date().toISOString(),
-        directory: mcpDir,
+        directory: mcpDir
       };
 
       // 注册 MCP 服务器和元数据
@@ -269,13 +271,13 @@ export class McpManager {
 
       return {
         commit: commit.trim(),
-        version,
+        version
       };
     } catch (error) {
       console.warn('获取 Git 信息失败:', error);
       return {
         commit: 'unknown',
-        version: undefined,
+        version: undefined
       };
     }
   }
@@ -453,7 +455,7 @@ export class McpManager {
         version: gitInfo.version,
         commit: gitInfo.commit,
         installDate: new Date().toISOString(),
-        directory: mcpDir,
+        directory: mcpDir
       };
 
       // 更新内存中的服务器和元数据
@@ -498,3 +500,5 @@ export class McpManager {
     return Array.from(this.mcpMetadata.values());
   }
 }
+
+export const mcpManager = new McpManager();

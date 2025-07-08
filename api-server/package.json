@@ -5,9 +5,10 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "jiti src/index.ts",
+    "dev": "nodemon --exec tsx watch src/index.ts",
     "start": "node dist/api-server/src/index.js",
     "build": "tsc",
+    "build:clean": "tsc --build --clean",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -27,10 +28,11 @@
     "@uxndigital/tsconfig": "^5.0.0",
     "dotenv": "^16.5.0",
     "eslint": "^9.28.0",
-    "express": "^5.1.0",
     "husky": "^9.1.7",
     "jiti": "^2.4.2",
+    "nodemon": "^3.1.10",
     "prettier": "^3.5.3",
+    "tsx": "^4.19.3",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.0"
   }
