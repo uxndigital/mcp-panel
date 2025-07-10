@@ -1,9 +1,12 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import packageJson from './package.json' with { type: 'json' };
+const packageJson = JSON.parse(
+  await fs.readFile(new URL('./package.json', import.meta.url))
+);
 
 dotenv.config();
 
