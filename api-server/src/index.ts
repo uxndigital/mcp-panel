@@ -3,6 +3,7 @@ import cors from 'cors';
 import type { RequestHandler } from 'express';
 import express from 'express';
 import fs from 'fs';
+import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,6 +13,25 @@ const app = express();
 const PORT = Number(process.env.PORT) || 9800;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// 通用加载 repo-cache 下所有 mcp 的 .env 环境变量
+const repoCacheDir = path.resolve(__dirname, '../repo-cache');
+if (fs.existsSync(repoCacheDir)) {
+  const mcpDirs = fs.readdirSync(repoCacheDir, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
+  mcpDirs.forEach(mcpName => {
+    const envPath = path.join(repoCacheDir, mcpName, '.env');
+    if (fs.existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+      console.log(`✅ 已加载 ${mcpName} 的 .env 环境变量:`, envPath);
+    } else {
+      console.log(`ℹ️ 未找到 ${mcpName} 的 .env 文件:`, envPath);
+    }
+  });
+} else {
+  console.log('ℹ️ 未找到 repo-cache 目录:', repoCacheDir);
+}
 
 // 中间件
 app.use(cors());
