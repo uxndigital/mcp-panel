@@ -3,6 +3,7 @@ import cors from 'cors';
 import type { RequestHandler } from 'express';
 import express from 'express';
 import fs from 'fs';
+import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,6 +13,25 @@ const app = express();
 const PORT = Number(process.env.PORT) || 9800;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// 通用加载 repo-cache 下所有 mcp 的 .env 环境变量
+const repoCacheDir = path.resolve(__dirname, '../repo-cache');
+if (fs.existsSync(repoCacheDir)) {
+  const mcpDirs = fs.readdirSync(repoCacheDir, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
+  mcpDirs.forEach(mcpName => {
+    const envPath = path.join(repoCacheDir, mcpName, '.env');
+    if (fs.existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+      console.log(`✅ 已加载 ${mcpName} 的 .env 环境变量:`, envPath);
+    } else {
+      console.log(`ℹ️ 未找到 ${mcpName} 的 .env 文件:`, envPath);
+    }
+  });
+} else {
+  console.log('ℹ️ 未找到 repo-cache 目录:', repoCacheDir);
+}
 
 // 中间件
 app.use(cors());
@@ -124,6 +144,55 @@ app.get('/api/mcp/list', (_req, res) => {
 
   res.json({ mcps: mcpInfo });
 });
+
+// 获取 MCP 的 .env 文件内容
+app.get('/api/mcp/env/:mcpName', ((req, res) => {
+  const mcpName = req.params.mcpName;
+  const envPath = path.join(repoCacheDir, String(mcpName), '.env');
+  if (!fs.existsSync(envPath)) {
+    return res.json({ env: {} });
+  }
+  try {
+    const envContent = fs.readFileSync(envPath, 'utf-8');
+    const envObj = {};
+    envContent.split(/\r?\n/).forEach(line => {
+      const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+      if (match) {
+        const key = match[1] ?? '';
+        let value = match[2] ?? '';
+        // 去除包裹的引号
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+        (envObj as Record<string, string>)[String(key)] = String(value);
+      }
+    });
+    res.json({ env: envObj });
+    return;
+  } catch (e) {
+    res.status(500).json({ error: '读取 env 文件失败' });
+    return;
+  }
+}) as RequestHandler);
+
+// 保存 MCP 的 .env 文件内容
+app.post('/api/mcp/env/:mcpName', ((req, res) => {
+  const mcpName = req.params.mcpName;
+  const envPath = path.join(repoCacheDir, String(mcpName), '.env');
+  const envObj = req.body.env || {};
+  try {
+    const envContent = Object.entries(envObj)
+      .map(([key, value]) => `${key}=${typeof value === 'string' ? value.replace(/\n/g, '\\n') : ''}`)
+      .join('\n');
+    fs.writeFileSync(envPath, envContent, 'utf-8');
+    res.json({ success: true });
+    setTimeout(() => process.exit(0), 100);
+    return;
+  } catch (e) {
+    res.status(500).json({ error: '写入 env 文件失败' });
+    return;
+  }
+}) as RequestHandler);
 
 // 健康检查端点
 app.get('/health', (_req, res) => {

@@ -8,14 +8,14 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 9810,
-      },
-      env_development: {
-        NODE_ENV: 'development',
-        PORT: 9810,
-      },
+      // env: {
+      //   NODE_ENV: 'production',
+      //   PORT: 9810,
+      // },
+      // env_development: {
+      //   NODE_ENV: 'development',
+      //   PORT: 9810,
+      // },
       log_date_format: 'YYYY-MM-DD HH:mm Z',
       error_file: './logs/api-server-error.log',
       out_file: './logs/api-server-out.log',
