@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Flex from '@/components/baseComponents/Flex';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import McpEnvEditor from '@/components/ui/McpEnvEditor';
 
 import { container } from './style';
 
@@ -44,6 +45,7 @@ function App() {
   const [githubUrl, setGithubUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [updatingMcps, setUpdatingMcps] = useState<Set<string>>(new Set());
+  const [expandedMcp, setExpandedMcp] = useState<string | null>(null);
 
   // 获取 MCP 列表
   const fetchMcps = async () => {
@@ -253,8 +255,17 @@ function App() {
                       >
                         卸载
                       </Button>
+                      <Button
+                        onClick={() => setExpandedMcp(expandedMcp === mcp.name ? null : mcp.name)}
+                        variant="outline"
+                      >
+                        {expandedMcp === mcp.name ? '收起环境变量' : '环境变量'}
+                      </Button>
                     </Flex>
                   </Flex>
+                  {expandedMcp === mcp.name && (
+                    <McpEnvEditor mcpName={mcp.name} serverDomain={SERVER_DOMAIN} />
+                  )}
                 </div>
               ))}
             </div>
