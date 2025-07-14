@@ -27,13 +27,13 @@ const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN || '';
 console.log(SERVER_DOMAIN, 'SERVER_DOMAIN');
 
 function getErrorMessage(error: any): void | string {
-  // if (!error) return '未知错误';  
+  // if (!error) return '未知错误';
   // if (typeof error === 'string') return error;
   // if (error.message) return error.message;
   // if (error.error) return error.error;
   try {
     console.log(error);
-    return '安装失败'
+    return '安装失败';
     // return JSON.stringify(error);
   } catch {
     return String(error);
@@ -67,7 +67,7 @@ function App() {
       const response = await fetch(`${SERVER_DOMAIN}/api/mcp/install`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ githubUrl }),
+        body: JSON.stringify({ githubUrl })
       });
 
       if (response.ok) {
@@ -95,9 +95,12 @@ function App() {
 
     try {
       const encodedMcpName = encodeURIComponent(mcpName);
-      const response = await fetch(`${SERVER_DOMAIN}/api/mcp/update/${encodedMcpName}`, {
-        method: 'PUT',
-      });
+      const response = await fetch(
+        `${SERVER_DOMAIN}/api/mcp/update/${encodedMcpName}`,
+        {
+          method: 'PUT'
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -129,9 +132,12 @@ function App() {
 
     try {
       const encodedMcpName = encodeURIComponent(mcpInfo.name);
-      const response = await fetch(`${SERVER_DOMAIN}/api/mcp/uninstall/${encodedMcpName}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${SERVER_DOMAIN}/api/mcp/uninstall/${encodedMcpName}`,
+        {
+          method: 'DELETE'
+        }
+      );
 
       if (response.ok) {
         console.log('卸载成功');
@@ -205,7 +211,11 @@ function App() {
             <div className="mcp-list-container">
               {mcps.map((mcp) => (
                 <div key={mcp.name}>
-                  <Flex justify="space-between" align="flex-start" style={{padding: '14px 0'}}>
+                  <Flex
+                    justify="space-between"
+                    align="flex-start"
+                    style={{ padding: '14px 0' }}
+                  >
                     <div style={{ flex: 1 }}>
                       <h3 className="mcp-list-item-name">
                         {mcp.name}
@@ -243,6 +253,16 @@ function App() {
                     </div>
                     <Flex gap="8px">
                       <Button
+                        onClick={() =>
+                          setExpandedMcp(
+                            expandedMcp === mcp.name ? null : mcp.name
+                          )
+                        }
+                        variant="outline"
+                      >
+                        {expandedMcp === mcp.name ? '收起环境变量' : '环境变量'}
+                      </Button>
+                      <Button
                         onClick={() => updateMcp(mcp)}
                         variant="outline"
                         disabled={updatingMcps.has(mcp.name)}
@@ -256,7 +276,11 @@ function App() {
                         卸载
                       </Button>
                       <Button
-                        onClick={() => setExpandedMcp(expandedMcp === mcp.name ? null : mcp.name)}
+                        onClick={() =>
+                          setExpandedMcp(
+                            expandedMcp === mcp.name ? null : mcp.name
+                          )
+                        }
                         variant="outline"
                       >
                         {expandedMcp === mcp.name ? '收起环境变量' : '环境变量'}
@@ -264,7 +288,10 @@ function App() {
                     </Flex>
                   </Flex>
                   {expandedMcp === mcp.name && (
-                    <McpEnvEditor mcpName={mcp.name} serverDomain={SERVER_DOMAIN} />
+                    <McpEnvEditor
+                      mcpName={mcp.name}
+                      serverDomain={SERVER_DOMAIN}
+                    />
                   )}
                 </div>
               ))}
