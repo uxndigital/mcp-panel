@@ -1,10 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { exec } from 'child_process';
-import fs from 'fs/promises';
+import dotenv from 'dotenv';
 import fsSync from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { promisify } from 'util';
-import dotenv from 'dotenv';
 
 const execAsync = promisify(exec);
 
@@ -79,7 +79,7 @@ export class McpManager {
               version: gitInfo.version,
               commit: gitInfo.commit,
               installDate: 'unknown', // 已存在的 MCP 无法确定安装时间
-              directory: mcpDir,
+              directory: mcpDir
             };
             this.mcpMetadata.set(endpoint, metadata);
           } catch (error) {
@@ -91,7 +91,7 @@ export class McpManager {
               version: undefined,
               commit: 'unknown',
               installDate: 'unknown',
-              directory: mcpDir,
+              directory: mcpDir
             };
             this.mcpMetadata.set(endpoint, metadata);
           }
@@ -124,7 +124,7 @@ export class McpManager {
 
   async installMcp(githubUrl: string): Promise<string> {
     // 备份目录路径
-    let backupDir: string | null = null;
+    const backupDir: string | null = null;
     let installSuccess = false;
     // 从 GitHub URL 提取仓库名称
     const repoName = githubUrl.split('/').pop()?.replace('.git', '') || '';
@@ -137,7 +137,9 @@ export class McpManager {
 
     try {
       // 2. 克隆仓库到临时目录
-      await execAsync(`git clone ${githubUrl.replace("https://github.com/", "git@github.com:").replace(/([^\.])$/, "$1.git")} ${tmpDir}`);
+      await execAsync(
+        `git clone ${githubUrl.replace('https://github.com/', 'git@github.com:').replace(/([^\.])$/, '$1.git')} ${tmpDir}`
+      );
 
       // 获取 Git 信息（临时目录）
       const gitInfo = await this.getGitInfo(tmpDir);
@@ -177,7 +179,7 @@ export class McpManager {
         version: gitInfo.version,
         commit: gitInfo.commit,
         installDate: new Date().toISOString(),
-        directory: mcpDir,
+        directory: mcpDir
       };
 
       // 注册 MCP 服务器和元数据
@@ -274,13 +276,13 @@ export class McpManager {
 
       return {
         commit: commit.trim(),
-        version,
+        version
       };
     } catch (error) {
       console.warn('获取 Git 信息失败:', error);
       return {
         commit: 'unknown',
-        version: undefined,
+        version: undefined
       };
     }
   }
@@ -458,7 +460,7 @@ export class McpManager {
         version: gitInfo.version,
         commit: gitInfo.commit,
         installDate: new Date().toISOString(),
-        directory: mcpDir,
+        directory: mcpDir
       };
 
       // 更新内存中的服务器和元数据
@@ -515,7 +517,7 @@ export class McpManager {
         // 检查部分常用环境变量
         // const checkVars = ['NODE_ENV', 'PORT', 'API_KEY', 'SECRET_KEY'];
         // console.log(process.env);
-        Object.keys(process.env).forEach(key => {
+        Object.keys(process.env).forEach((key) => {
           console.log(`[MCP ENV] ${key} =`, process.env[key]);
         });
         // checkVars.forEach(key => {
@@ -531,3 +533,5 @@ export class McpManager {
     }
   }
 }
+
+export const mcpManager = new McpManager();
