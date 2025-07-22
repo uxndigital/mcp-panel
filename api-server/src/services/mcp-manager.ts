@@ -151,7 +151,7 @@ export class McpManager {
       );
       console.log(`📦 已安装并构建 MCP: ${repoName}`);
 
-      // 4. 清理不需要的文件
+      // // 4. 清理不需要的文件
       await execAsync(
         `rm -rf ${tmpDir}/src ${tmpDir}/server ${tmpDir}/.github`
       );
@@ -184,9 +184,6 @@ export class McpManager {
       this.mcpServers.set(endpoint, server);
       this.mcpEndpoints.set(endpoint, mcpDir);
       this.mcpMetadata.set(endpoint, metadata);
-
-      // 加载 .env
-      this.loadMcpEnv(mcpDir);
 
       installSuccess = true;
       console.log(`✅ 成功安装 MCP: ${endpoint}`);
@@ -467,9 +464,6 @@ export class McpManager {
       // 更新内存中的服务器和元数据
       this.mcpServers.set(endpoint, server);
       this.mcpMetadata.set(endpoint, updatedMetadata);
-
-      // 重新加载 .env
-      this.loadMcpEnv(mcpDir);
 
       console.log(
         `✅ 成功更新 MCP: ${endpoint} (${oldCommit.substring(0, 8)} → ${newCommit.substring(0, 8)})`

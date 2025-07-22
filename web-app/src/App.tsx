@@ -181,7 +181,7 @@ function App() {
             type="text"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
-            placeholder="输入 GitHub 仓库 URL"
+            placeholder="输入 GitHub 仓库 URL: https://github.com/your-org/your-repo"
           />
           <Button
             onClick={installMcp}
@@ -274,16 +274,6 @@ function App() {
                         variant="danger"
                       >
                         卸载
-                      </Button>
-                      <Button
-                        onClick={() =>
-                          setExpandedMcp(
-                            expandedMcp === mcp.name ? null : mcp.name
-                          )
-                        }
-                        variant="outline"
-                      >
-                        {expandedMcp === mcp.name ? '收起环境变量' : '环境变量'}
                       </Button>
                     </Flex>
                   </Flex>
