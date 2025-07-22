@@ -1,7 +1,7 @@
 {
   "extends": "@uxndigital/tsconfig/web/app.json",
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
+    "allowImportingTsExtensions": false,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

@@ -1,5 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { exec } from 'child_process';
+import dotenv from 'dotenv';
+import fsSync from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
 import { promisify } from 'util';
@@ -57,6 +59,9 @@ export class McpManager {
           // 动态导入 MCP 服务器
           const mcpModule = await import(modulePath);
           const server = mcpModule.default;
+
+          // 加载 .env
+          this.loadMcpEnv(mcpDir);
 
           // 生成端点路径
           const endpoint = `/${dir.name}/mcp`;
@@ -119,7 +124,7 @@ export class McpManager {
 
   async installMcp(githubUrl: string): Promise<string> {
     // 备份目录路径
-    let backupDir: string | null = null;
+    const backupDir: string | null = null;
     let installSuccess = false;
     // 从 GitHub URL 提取仓库名称
     const repoName = githubUrl.split('/').pop()?.replace('.git', '') || '';
@@ -148,7 +153,7 @@ export class McpManager {
       );
       console.log(`📦 已安装并构建 MCP: ${repoName}`);
 
-      // 4. 清理不需要的文件
+      // // 4. 清理不需要的文件
       await execAsync(
         `rm -rf ${tmpDir}/src ${tmpDir}/server ${tmpDir}/.github`
       );
@@ -498,6 +503,34 @@ export class McpManager {
 
   getAllMcpInfo(): McpMetadata[] {
     return Array.from(this.mcpMetadata.values());
+  }
+
+  /**
+   * 加载指定 mcp 目录下的 .env 文件
+   */
+  private loadMcpEnv(mcpDir: string) {
+    const envPath = path.join(mcpDir, '.env');
+    try {
+      if (fsSync.existsSync(envPath)) {
+        dotenv.config({ path: envPath, override: true });
+        console.log(`✅ [MCP ENV] 已加载 .env: ${envPath}`);
+        // 检查部分常用环境变量
+        // const checkVars = ['NODE_ENV', 'PORT', 'API_KEY', 'SECRET_KEY'];
+        // console.log(process.env);
+        Object.keys(process.env).forEach((key) => {
+          console.log(`[MCP ENV] ${key} =`, process.env[key]);
+        });
+        // checkVars.forEach(key => {
+        //   if (process.env[key]) {
+        //     console.log(`[MCP ENV] ${key} =`, process.env[key]);
+        //   }
+        // });
+      } else {
+        console.log(`ℹ️ [MCP ENV] 未找到 .env: ${envPath}`);
+      }
+    } catch (e) {
+      console.warn(`⚠️ [MCP ENV] 加载 .env 失败: ${envPath}`, e);
+    }
   }
 }
 

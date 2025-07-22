@@ -2,7 +2,6 @@ import cors from 'cors';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 import apiRouter from './routes/api.js';
 import mcpRouter from './routes/mcp.js';
@@ -10,13 +9,11 @@ import { mcpManager } from './services/mcp-manager.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 9800;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // 在开发环境中：__dirname 是 src/
 // 在构建后：__dirname 是 dist/api-server/src/
 // 需要找到与 dist 同级的 cache 文件夹
-const cache = path.resolve(__dirname, '..', '..', '..', 'cache');
+const cache = path.resolve(import.meta.dirname, '..', 'cache');
 
 console.log('📁 Cache 目录路径:', cache);
 console.log('📁 Cache 目录是否存在:', fs.existsSync(cache));
@@ -38,8 +35,8 @@ app.use(
   (
     error: Error,
     _req: express.Request,
-    res: express.Response
-    // _next: express.NextFunction
+    res: express.Response,
+    _next: express.NextFunction
   ) => {
     console.error('❌ MCP API Error:', error);
     res.status(500).json({
