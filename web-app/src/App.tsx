@@ -181,7 +181,7 @@ function App() {
             type="text"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
-            placeholder="输入 GitHub 仓库 URL: https://github.com/your-org/your-repo"
+            placeholder="https://github.com/your-org/your-repo"
           />
           <Button
             onClick={installMcp}
