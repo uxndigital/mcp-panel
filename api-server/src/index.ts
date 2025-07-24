@@ -88,6 +88,11 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
+// 添加捕获 promise 未处理的错误
+process.on('unhandledRejection', (error) => {
+  console.error('❌ 未处理的 promise 错误:', error);
+});
+
 startServer().catch((error) => {
   console.error('❌ 启动服务器失败:', error);
   process.exit(1);
