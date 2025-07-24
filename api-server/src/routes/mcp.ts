@@ -28,7 +28,7 @@ const mcpRouter = (req, res, next) => {
     return router(req, res, next);
   }
 
-  next();
+  return next();
 };
 
 export default mcpRouter;
