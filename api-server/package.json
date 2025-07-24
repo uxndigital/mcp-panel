@@ -9,7 +9,8 @@
     "start": "node dist/index.js",
     "build": "tsc && tsc-alias",
     "build:clean": "tsc --build --clean",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

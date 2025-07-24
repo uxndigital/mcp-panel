@@ -25,7 +25,7 @@ const mcpRouter = (req, res, next) => {
       });
       routerMap.set(endpoint, router);
     }
-    router(req, res, next);
+    return router(req, res, next);
   }
 
   next();
