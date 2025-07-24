@@ -8,7 +8,8 @@ import { mcpManager } from '@/services/mcp-manager.js';
 const router: Router = express.Router();
 
 // 通用加载 repo-cache 下所有 mcp 的 .env 环境变量
-const repoCacheDir = path.resolve(import.meta.dirname, '../../repo-cache');
+// const repoCacheDir = path.resolve(import.meta.dirname, '../../repo-cache');
+const repoCacheDir = path.resolve(process.cwd(), 'repo-cache');
 if (fs.existsSync(repoCacheDir)) {
   const mcpDirs = fs
     .readdirSync(repoCacheDir, { withFileTypes: true })
