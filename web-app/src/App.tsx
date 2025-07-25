@@ -181,7 +181,7 @@ function App() {
             type="text"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
-            placeholder="https://github.com/your-org/your-repo"
+            placeholder="支持 HTTPS 或 SSH: https://github.com/your-org/your-repo 或 git@github.com:your-org/your-repo"
           />
           <Button
             onClick={installMcp}
