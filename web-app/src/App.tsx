@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import Flex from '@/components/baseComponents/Flex';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+// import Input from '@/components/ui/Input';
 import McpEnvEditor from '@/components/ui/McpEnvEditor';
 
 import { container } from './style';
@@ -176,12 +176,15 @@ function App() {
           justify="flex-end"
           gap="12px"
         >
-          <Input
+          <textarea
             className="mcp-install-input"
-            type="text"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
-            placeholder="支持 HTTPS 或 SSH: https://github.com/your-org/your-repo 或 git@github.com:your-org/your-repo"
+            placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
+            draggable={false}
+            onDragStart={(e) => e.preventDefault()}
+            onDrop={(e) => e.preventDefault()}
+            onDragOver={(e) => e.preventDefault()}
           />
           <Button
             onClick={installMcp}
