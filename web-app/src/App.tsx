@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import Flex from '@/components/baseComponents/Flex';
 import Button from '@/components/ui/Button';
-// import Input from '@/components/ui/Input';
+import Input from '@/components/ui/Input';
 import McpEnvEditor from '@/components/ui/McpEnvEditor';
 
 import { container } from './style';
@@ -176,15 +176,11 @@ function App() {
           justify="flex-end"
           gap="12px"
         >
-          <textarea
+          <Input
             className="mcp-install-input"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
-            placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
-            draggable={false}
-            onDragStart={(e) => e.preventDefault()}
-            onDrop={(e) => e.preventDefault()}
-            onDragOver={(e) => e.preventDefault()}
+            placeholder="https://github.com/org/repo.git"
           />
           <Button
             onClick={installMcp}
