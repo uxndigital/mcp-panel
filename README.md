@@ -3,10 +3,10 @@
 一个用于管理 Model Context Protocol (MCP) 服务的现代化管理面板，支持通过 GitHub 仓库一键安装、升级和管理 MCP 服务。
 
 ## ✨ 功能特性
-- 🚀 一键安装 MCP 服务（支持 GitHub URL）
-- 🔄 智能检测并升级 MCP 到最新版本
+- 🚀 一键安装 MCP 服务（支持 GitHub HTTPS 和 SSH URL）
+- 🔄 智能检测并升级 MCP 到最新版本（自动更新时间戳）
 - 🗑️ 安全卸载 MCP 服务及依赖
-- 📊 元数据跟踪（Git URL、版本、提交哈希、安装时间）
+- 📊 元数据跟踪（Git URL、版本、提交哈希、安装/更新时间）
 - 🔌 独立端点：为每个 MCP 提供独立 HTTP 访问
 - 🎨 现代化 React UI
 - ⚡ PM2 生产部署支持
@@ -42,39 +42,58 @@ mcp-panel/
 
 ### 安装依赖
 ```bash
+# 安装所有依赖（推荐）
 pnpm install
+
+# 或者分别安装
+pnpm run install:api  # 只安装后端依赖
+pnpm run install:web  # 只安装前端依赖
 ```
 
 ### 启动开发环境
-同时启动后端和前端：
 ```bash
+# 同时启动后端和前端（推荐）
 pnpm run dev
+
+# 或者分别启动
+pnpm run dev:api  # 只启动后端
+pnpm run dev:web  # 只启动前端
 ```
+
 - API 服务: http://localhost:9800
 - 前端应用: http://localhost:9801
 
-### 单独启动
-```bash
-# 只启动 API 服务
-cd api-server && pnpm run dev
-
-# 只启动前端
-cd web-app && pnpm run dev
-```
-
 ### 构建与生产部署
-推荐使用 PM2：
 ```bash
-pnpm run build      # 构建前后端
-pnpm start          # 使用 PM2 启动
+# 构建所有项目（推荐）
+pnpm run build
+
+# 或者分别构建
+pnpm run build:api  # 只构建后端
+pnpm run build:web  # 只构建前端
+
+# 使用 PM2 启动生产环境
+pnpm start
 ```
 
 ## 🛠️ 常用命令
 ```bash
+# 安装依赖
 pnpm install           # 安装所有依赖
-pnpm run dev           # 开发模式（前后端）
+pnpm run install:api   # 只安装后端依赖
+pnpm run install:web   # 只安装前端依赖
+
+# 开发模式
+pnpm run dev           # 同时启动前后端
+pnpm run dev:api       # 只启动后端
+pnpm run dev:web       # 只启动前端
+
+# 构建
 pnpm run build         # 构建所有项目
-pnpm run lint          # 代码检查
+pnpm run build:api     # 只构建后端
+pnpm run build:web     # 只构建前端
+
+# 生产部署
 pnpm start             # PM2 启动
 ```
 
@@ -86,6 +105,12 @@ pnpm start             # PM2 启动
 | DELETE | /api/mcp/uninstall/{name}   | 卸载 MCP 服务      |
 | GET    | /api/mcp/list               | 获取已安装列表     |
 | GET    | /health                     | 健康检查           |
+
+### 🔗 GitHub URL 格式支持
+安装 MCP 服务时支持以下 GitHub URL 格式：
+- **HTTPS**: `https://github.com/your-org/your-repo`
+- **SSH**: `git@github.com:your-org/your-repo`
+- **简化格式**: `github.com/your-org/your-repo` (自动识别为 HTTPS)
 
 每个 MCP 服务会有独立端点：
 - `POST/GET /{mcpName}/mcp` 与指定 MCP 通信

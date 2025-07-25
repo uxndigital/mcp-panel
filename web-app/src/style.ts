@@ -13,7 +13,13 @@ export const container = css`
   }
 
   .mcp-install-input {
-    width: 287px;
+    width: 100%;
+    height: 100px;
+    resize: none;
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
   }
 
   .app-content {
