@@ -3,7 +3,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "concurrently \"cd api-server && pnpm build\" \"cd web-app && pnpm build\"",
+    "build": "pnpm run build:api && pnpm run build:web",
+    "build:api": "cd api-server && pnpm build",
+    "build:web": "cd web-app && pnpm build",
+    "install": "pnpm run install:api && pnpm run install:web",
+    "install:api": "cd api-server && pnpm install",
+    "install:web": "cd web-app && pnpm install",
+    "dev": "concurrently \"cd api-server && pnpm dev\" \"cd web-app && pnpm dev\"",
+    "dev:api": "cd api-server && pnpm dev",
+    "dev:web": "cd web-app && pnpm dev",
     "start": "pm2 start ecosystem.config.cjs"
   },
   "devDependencies": {

@@ -178,10 +178,9 @@ function App() {
         >
           <Input
             className="mcp-install-input"
-            type="text"
             value={githubUrl}
             onChange={(e) => setGithubUrl(e.target.value)}
-            placeholder="https://github.com/your-org/your-repo"
+            placeholder="https://github.com/org/repo.git"
           />
           <Button
             onClick={installMcp}

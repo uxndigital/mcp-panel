@@ -17,6 +17,10 @@ interface McpMetadata {
   directory: string;
 }
 
+interface McpMetadataFile {
+  [endpoint: string]: McpMetadata;
+}
+
 export class McpManager {
   private mcpServers: Map<string, McpServer> = new Map();
   private mcpEndpoints: Map<string, string> = new Map();
@@ -27,6 +31,8 @@ export class McpManager {
     this.baseDir = path.join(process.cwd(), 'repo-cache');
     // 如果目录不存在则创建
     fs.mkdir(this.baseDir, { recursive: true }).catch(() => {});
+    // 加载已保存的元数据
+    this.loadMetadata();
   }
 
   async initialize(): Promise<void> {
@@ -73,24 +79,32 @@ export class McpManager {
           // 尝试获取已存在 MCP 的 Git 信息
           try {
             const gitInfo = await this.getGitInfo(mcpDir);
+            const remoteUrl = await this.getRemoteUrl(mcpDir);
+            
+            // 检查是否已有保存的元数据
+            const existingMetadata = this.mcpMetadata.get(endpoint);
+            
             const metadata: McpMetadata = {
               name: dir.name,
-              gitUrl: await this.getRemoteUrl(mcpDir),
+              gitUrl: remoteUrl,
               version: gitInfo.version,
               commit: gitInfo.commit,
-              installDate: 'unknown', // 已存在的 MCP 无法确定安装时间
+              installDate: existingMetadata?.installDate || 'unknown', // 使用已保存的安装时间
               directory: mcpDir
             };
             this.mcpMetadata.set(endpoint, metadata);
           } catch (error) {
             console.warn(`无法获取 ${dir.name} 的 Git 信息:`, error);
+            // 检查是否已有保存的元数据
+            const existingMetadata = this.mcpMetadata.get(endpoint);
+            
             // 创建基本元数据
             const metadata: McpMetadata = {
               name: dir.name,
               gitUrl: 'unknown',
               version: undefined,
               commit: 'unknown',
-              installDate: 'unknown',
+              installDate: existingMetadata?.installDate || 'unknown',
               directory: mcpDir
             };
             this.mcpMetadata.set(endpoint, metadata);
@@ -126,20 +140,23 @@ export class McpManager {
     // 备份目录路径
     const backupDir: string | null = null;
     let installSuccess = false;
+    
+    // 标准化 GitHub URL 格式
+    const normalizedUrl = this.normalizeGitHubUrl(githubUrl);
+    
     // 从 GitHub URL 提取仓库名称
-    const repoName = githubUrl.split('/').pop()?.replace('.git', '') || '';
+    const repoName = this.extractRepoName(normalizedUrl);
     const mcpDir = path.join(this.baseDir, repoName);
 
     // 生成唯一的临时目录
     const tmpDir = path.join(this.baseDir, `.tmp-${repoName}-${Date.now()}`);
 
     console.log(`🔄 开始安装 MCP: ${repoName}`);
+    console.log(`📥 使用 URL: ${normalizedUrl}`);
 
     try {
       // 2. 克隆仓库到临时目录
-      await execAsync(
-        `git clone ${githubUrl.replace('https://github.com/', 'git@github.com:').replace(/([^\.])$/, '$1.git')} ${tmpDir}`
-      );
+      await execAsync(`git clone ${normalizedUrl} ${tmpDir}`);
 
       // 获取 Git 信息（临时目录）
       const gitInfo = await this.getGitInfo(tmpDir);
@@ -186,6 +203,9 @@ export class McpManager {
       this.mcpServers.set(endpoint, server);
       this.mcpEndpoints.set(endpoint, mcpDir);
       this.mcpMetadata.set(endpoint, metadata);
+
+      // 保存元数据到文件
+      this.saveMetadata();
 
       installSuccess = true;
       console.log(`✅ 成功安装 MCP: ${endpoint}`);
@@ -317,6 +337,9 @@ export class McpManager {
       this.mcpMetadata.delete(endpoint);
       console.log(`🧠 已从内存中移除 MCP 引用`);
 
+      // 保存更新后的元数据到文件
+      this.saveMetadata();
+
       // 检查目录是否存在
       try {
         await fs.access(mcpDir);
@@ -421,8 +444,21 @@ export class McpManager {
       const newCommit = latestCommit.trim();
 
       if (oldCommit === newCommit) {
-        console.log(`ℹ️ MCP 已是最新版本，无需更新`);
-        return currentMetadata;
+        console.log(`ℹ️ MCP 已是最新版本，但会更新时间戳`);
+        // 即使没有代码更新，也更新时间戳
+        const updatedMetadata: McpMetadata = {
+          ...currentMetadata,
+          installDate: new Date().toISOString()
+        };
+        
+        // 更新内存中的元数据
+        this.mcpMetadata.set(endpoint, updatedMetadata);
+        
+        // 保存元数据到文件
+        this.saveMetadata();
+        
+        console.log(`✅ 已更新时间戳: ${endpoint}`);
+        return updatedMetadata;
       }
 
       console.log(`🆕 发现更新: ${newCommit.substring(0, 8)}`);
@@ -467,9 +503,13 @@ export class McpManager {
       this.mcpServers.set(endpoint, server);
       this.mcpMetadata.set(endpoint, updatedMetadata);
 
+      // 保存元数据到文件
+      this.saveMetadata();
+
       console.log(
         `✅ 成功更新 MCP: ${endpoint} (${oldCommit.substring(0, 8)} → ${newCommit.substring(0, 8)})`
       );
+      console.log(`📅 更新时间: ${updatedMetadata.installDate}`);
       // 更新成功后重启服务
       console.log('🚀 更新完成，服务即将重启...');
       setTimeout(() => process.exit(0), 100);
@@ -503,6 +543,99 @@ export class McpManager {
 
   getAllMcpInfo(): McpMetadata[] {
     return Array.from(this.mcpMetadata.values());
+  }
+
+  /**
+   * 标准化 GitHub URL 格式，支持 HTTPS 和 SSH
+   */
+  private normalizeGitHubUrl(url: string): string {
+    // 移除末尾的 .git（如果存在）
+    let normalizedUrl = url.replace(/\.git$/, '');
+    
+    // 检查是否是 SSH 格式
+    if (normalizedUrl.startsWith('git@github.com:')) {
+      // 已经是 SSH 格式，添加 .git 后缀
+      return `${normalizedUrl}.git`;
+    }
+    
+    // 检查是否是 HTTPS 格式
+    if (normalizedUrl.startsWith('https://github.com/')) {
+      // 保持 HTTPS 格式，添加 .git 后缀
+      return `${normalizedUrl}.git`;
+    }
+    
+    // 检查是否是 SSH 格式但缺少 git@ 前缀
+    if (normalizedUrl.includes('github.com:') && !normalizedUrl.startsWith('git@')) {
+      // 添加 git@ 前缀
+      return `git@${normalizedUrl}.git`;
+    }
+    
+    // 检查是否是 HTTPS 格式但缺少协议
+    if (normalizedUrl.includes('github.com/') && !normalizedUrl.startsWith('http')) {
+      // 添加 https:// 前缀
+      return `https://${normalizedUrl}.git`;
+    }
+    
+    // 如果都不匹配，假设是 HTTPS 格式
+    return `${normalizedUrl}.git`;
+  }
+
+  /**
+   * 从 GitHub URL 提取仓库名称
+   */
+  private extractRepoName(url: string): string {
+    // 移除 .git 后缀
+    const cleanUrl = url.replace(/\.git$/, '');
+    
+    // 提取最后一部分作为仓库名
+    const parts = cleanUrl.split('/');
+    const repoName = parts[parts.length - 1];
+    
+    // 如果仓库名为空，使用默认名称
+    return repoName || 'unknown-repo';
+  }
+
+  /**
+   * 加载已保存的元数据
+   */
+  private loadMetadata() {
+    try {
+      const metadataPath = path.join(this.baseDir, 'metadata.json');
+      if (fsSync.existsSync(metadataPath)) {
+        const metadataContent = fsSync.readFileSync(metadataPath, 'utf-8');
+        const savedMetadata: McpMetadataFile = JSON.parse(metadataContent);
+        
+        // 将保存的元数据加载到内存中
+        Object.entries(savedMetadata).forEach(([endpoint, metadata]) => {
+          this.mcpMetadata.set(endpoint, metadata);
+        });
+        
+        console.log(`📋 已加载 ${Object.keys(savedMetadata).length} 个 MCP 元数据记录`);
+      }
+    } catch (error) {
+      console.warn('加载元数据失败:', error);
+    }
+  }
+
+  /**
+   * 保存元数据到文件
+   */
+  private saveMetadata() {
+    try {
+      const metadataPath = path.join(this.baseDir, 'metadata.json');
+      const metadataToSave: McpMetadataFile = {};
+      
+      // 将内存中的元数据转换为对象
+      this.mcpMetadata.forEach((metadata, endpoint) => {
+        metadataToSave[endpoint] = metadata;
+      });
+      
+      // 保存到文件
+      fsSync.writeFileSync(metadataPath, JSON.stringify(metadataToSave, null, 2));
+      console.log(`💾 已保存 ${Object.keys(metadataToSave).length} 个 MCP 元数据记录`);
+    } catch (error) {
+      console.error('保存元数据失败:', error);
+    }
   }
 
   /**
