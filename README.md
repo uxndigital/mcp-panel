@@ -43,11 +43,12 @@ mcp-panel/
 ### 安装依赖
 ```bash
 # 安装所有依赖（推荐）
-pnpm install
+pnpm i
+pnpm run setup
 
 # 或者分别安装
-pnpm run install:api  # 只安装后端依赖
-pnpm run install:web  # 只安装前端依赖
+pnpm run setup:api  # 只安装后端依赖
+pnpm run setup:web  # 只安装前端依赖
 ```
 
 ### 启动开发环境
@@ -79,9 +80,9 @@ pnpm start
 ## 🛠️ 常用命令
 ```bash
 # 安装依赖
-pnpm install           # 安装所有依赖
-pnpm run install:api   # 只安装后端依赖
-pnpm run install:web   # 只安装前端依赖
+pnpm run setup           # 安装所有依赖
+pnpm run setup:api   # 只安装后端依赖
+pnpm run setup:web   # 只安装前端依赖
 
 # 开发模式
 pnpm run dev           # 同时启动前后端
