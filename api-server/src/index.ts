@@ -13,7 +13,7 @@ const PORT = Number(process.env.PORT) || 9800;
 // 在开发环境中：__dirname 是 src/
 // 在构建后：__dirname 是 dist/api-server/src/
 // 需要找到与 dist 同级的 cache 文件夹
-const cache = path.resolve(process.cwd(), '..', 'cache');
+const cache = path.resolve(process.cwd(), 'cache');
 
 console.log('📁 Cache 目录路径:', cache);
 console.log('📁 Cache 目录是否存在:', fs.existsSync(cache));
